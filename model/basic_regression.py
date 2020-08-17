@@ -26,7 +26,7 @@ def regression_2019():
 
     # setup the NN structure to have 1 layer. ie, a basic regression.
     model = tf.keras.Sequential([
-        tf.keras.layers.Dense(1, activation='linear', input_shape=[len(train_dataset.keys())]),
+        tf.keras.layers.Dense(1, activation='linear', input_shape=[len(train_x.keys())]),
     ])
 
     # compile the model.
