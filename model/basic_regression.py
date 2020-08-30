@@ -42,7 +42,34 @@ def regression_2019():
         callbacks=[tfdocs.modeling.EpochDots()])
 
     # plot the error function to Jupyter Notebook.
+    plt.figure(1)
     plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)
     plotter.plot({'Basic': history}, metric = "mse")
     plt.ylim([0, 4000])
     plt.ylabel('MSE')
+    
+    # Evaluating the model (based on training data) on the test data 
+    loss, mae, mse = model.evaluate(test_x, test_y, verbose=0)
+
+    # Prints out the mean squared error
+    print("\n Testing set Mean Squared Error: {:5.2f}".format(mse))
+
+    # Predicting the model (produced above) on the untestd - test data set
+    test_predictions = model.predict(test_x).flatten()
+    plt.figure(2)
+    a = plt.axes(aspect='equal')
+
+    # Scatter plot of the predicted ReuseRate data set against the actual ReuseRate data set (as per mavern)
+    plt.scatter(test_y, test_predictions)
+
+    # defining axis title
+    plt.xlabel('True Value [ReuseRate]')
+    plt.ylabel('Predicted Value [ReuseRate]')
+
+    # axis range limits
+    lims = [0, 100]
+
+    # plotting the values
+    plt.xlim(lims)
+    plt.ylim(lims)
+    _ = plt.plot(lims, lims)
