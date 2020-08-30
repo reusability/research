@@ -15,7 +15,6 @@ import tensorflow_docs.modeling
 
 # import local modules.
 from model.base_model import BaseModel
-from utils import data_loader
 
 """
 Define the Neural network class.
@@ -24,15 +23,14 @@ class NN(BaseModel):
     """
     initialise class instance.
     """
-    def __init__(self, data, hidden_layers = [], epochs=100, validation_split=0.2):
+    def __init__(self, data, hidden_layers = [], epochs=100, validation_split=0.2, normalize=True):
         # call parent function.
-        BaseModel.__init__(self, data)
+        BaseModel.__init__(self, data, normalize=normalize)
 
         # additional attributes specific to this model.
         self.is_trained = False
         self.epochs = epochs
         self.validation_split = validation_split
-        self.normalization_params = data_loader.get_normalization_params(self.test_x)
 
         # if there are no hidden layers:
         if len(hidden_layers) == 0:
@@ -68,11 +66,8 @@ class NN(BaseModel):
         # call parent function.
         BaseModel.train(self)
 
-        # get normalized x values.
-        normalized_train_x = self.normalize_x(self.train_x)
-
         # train the model.
-        history = self.model.fit(normalized_train_x, self.train_y, epochs=self.epochs, validation_split=self.validation_split, verbose=0,
+        history = self.model.fit(self.train_x, self.train_y, epochs=self.epochs, validation_split=self.validation_split, verbose=0,
             callbacks=[tfdocs.modeling.EpochDots()])
 
         # plot fitting the error function over time to Jupyter Notebook.
@@ -104,37 +99,14 @@ class NN(BaseModel):
         # call parent function.
         BaseModel.test(self)
 
-        # get normalized x values.
-        normalized_test_x = self.normalize_x(self.test_x)
-
         # call predict method on the statsmodels.OLS object to predict out of
         # sample oversvations. convert to pandas series.
-        numpy_predictions = self.model.predict(normalized_test_x).flatten().astype(int)
+        numpy_predictions = self.model.predict(self.test_x).flatten().astype(int)
         self.test_predictions = pd.Series(numpy_predictions, dtype="int32")
 
         # assess the performance of the predictions.
         self.assess_performance()
 
         # Evaluating the model (based on training data) on the test data
-        (loss, mae, mse) = self.model.evaluate(normalized_test_x, self.test_y, verbose=0)
+        (loss, mae, mse) = self.model.evaluate(self.test_x, self.test_y, verbose=0)
         print('loss: %0.d, mae: %0.d, mse: %0.d' % (loss, mae, mse))
-
-    """
-    Convert a pandas dataframe of values into normalized values based on the
-    normalized params attribute. x_values is a pandas dataframe.
-    """
-    def normalize_x(self, x_values):
-        # copy the dataframe.
-        normalized_values = pd.DataFrame()
-
-        # iterate over each column and normalize.
-        for column in x_values.columns:
-            # retrieve normalization parameters.
-            mean = self.normalization_params[column]['mean']
-            std = self.normalization_params[column]['std']
-
-            # save the normalized column.
-            normalized_values[column] = (x_values[column] - mean) / std
-
-        # return the normalized dataframe.
-        return normalized_values

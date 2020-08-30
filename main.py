@@ -16,7 +16,7 @@ multicollinearity and performance of metrics against the reuse rate.
 """
 def describe_data():
     data = data_loader.load_2019_dataset(sqaured=False, remove_multicollinearity=False)
-    #pre_training_analysis_tools.display_correlation_heatmap(data['test_x'])
+    pre_training_analysis_tools.display_correlation_heatmap(data['test_x'])
     pre_training_analysis_tools.display_covariance_heatmap(data['test_x'])
     #pre_training_analysis_tools.display_correlation_scatterplots_xy(data['test_x'], data['test_y'])
     #pre_training_analysis_tools.display_correlation_scatterplots_x(data['test_x'])
@@ -29,7 +29,7 @@ def main():
     data = data_loader.load_2019_dataset(only_proposed=True)
 
     # determine which model we are using.
-    model = LeastSquares(data)
+    model = LeastSquares(data, normalize=False)
     model.train()
     model.describe()
     model.test()

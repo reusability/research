@@ -19,9 +19,9 @@ class TreeClassifier(BaseModel):
     """
     initialise class instance.
     """
-    def __init__(self, data):
+    def __init__(self, data, normalize=False):
         # call parent function.
-        BaseModel.__init__(self, data)
+        BaseModel.__init__(self, data, normalize=normalize)
 
         # placeholders specific to this class.
         self.model = None
