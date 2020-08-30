@@ -17,9 +17,25 @@ def display_correlation_heatmap(data):
     corrmat = data.corr()
     top_corr_features = corrmat.index
     plt.figure(figsize=(20,20))
+    plt.title('Correlation')
 
     #plot heat map
     g=sns.heatmap(data[top_corr_features].corr(),annot=True,cmap="RdYlGn")
+
+"""
+This function will display a heatmap of correlations between each metrics. input
+should be a pandas dataset.
+"""
+def display_covariance_heatmap(data):
+    # Creating a heatmap - to find the correlation between each variable
+    #get correlations of each features in dataset
+    corrmat = data.cov()
+    top_corr_features = corrmat.index
+    plt.figure(figsize=(20,20))
+    plt.title('Covariance')
+
+    #plot heat map
+    g=sns.heatmap(data[top_corr_features].cov(),annot=True,cmap="RdYlGn")
 
 """
 This function will display a unique scatter plot for each pair of metrics to
@@ -45,6 +61,7 @@ def display_correlation_scatterplots_x(data):
 
 """
 This function will display a scatter plot of data_x and data_y for each x.
+data_x should be a pandas dataframe and data_y should be a pandas series.
 """
 def display_correlation_scatterplots_xy(data_x, data_y):
     figure_count = 0
@@ -56,7 +73,7 @@ def display_correlation_scatterplots_xy(data_x, data_y):
         plt.axes()
         plt.xlabel(data_x.columns[i])
         plt.ylabel(data_y.name)
-        
+
         # populate the plot.
         plt.scatter(data_x[data_x.columns[i]], data_y)
 

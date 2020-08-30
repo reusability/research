@@ -12,9 +12,9 @@ import statsmodels.api as sm
 from model.base_model import BaseModel
 
 """
-Define the OLS class.
+Define the GLS class.
 """
-class OLS(BaseModel):
+class LeastSquares(BaseModel):
     """
     initialise class instance.
     """
@@ -27,7 +27,7 @@ class OLS(BaseModel):
         self.trained_model = None
 
         # initialise a statsmodels OLS instance.
-        self.model = sm.OLS(self.train_y.to_numpy(), self.train_x.to_numpy())
+        self.model = sm.GLS(self.train_y, self.train_x)
 
     """
     fit the model with the training data.

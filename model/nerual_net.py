@@ -24,12 +24,14 @@ class NN(BaseModel):
     """
     initialise class instance.
     """
-    def __init__(self, data, hidden_layers = []):
+    def __init__(self, data, hidden_layers = [], epochs=100, validation_split=0.2):
         # call parent function.
         BaseModel.__init__(self, data)
 
         # additional attributes specific to this model.
         self.is_trained = False
+        self.epochs = epochs
+        self.validation_split = validation_split
         self.normalization_params = data_loader.get_normalization_params(self.test_x)
 
         # if there are no hidden layers:
@@ -70,7 +72,7 @@ class NN(BaseModel):
         normalized_train_x = self.normalize_x(self.train_x)
 
         # train the model.
-        history = self.model.fit(normalized_train_x, self.train_y, epochs=100, validation_split = 0.2, verbose=0,
+        history = self.model.fit(normalized_train_x, self.train_y, epochs=self.epochs, validation_split=self.validation_split, verbose=0,
             callbacks=[tfdocs.modeling.EpochDots()])
 
         # plot fitting the error function over time to Jupyter Notebook.
@@ -106,8 +108,9 @@ class NN(BaseModel):
         normalized_test_x = self.normalize_x(self.test_x)
 
         # call predict method on the statsmodels.OLS object to predict out of
-        # sample oversvations.
-        self.test_predictions = np.array(self.model.predict(normalized_test_x).flatten().astype(int))
+        # sample oversvations. convert to pandas series.
+        numpy_predictions = self.model.predict(normalized_test_x).flatten().astype(int)
+        self.test_predictions = pd.Series(numpy_predictions, dtype="int32")
 
         # assess the performance of the predictions.
         self.assess_performance()

@@ -70,7 +70,8 @@ class TreeClassifier(BaseModel):
 
         # call predict method on the sklearn.ExtraTreesClassifier object to
         # predict out of sample oversvations.
-        self.test_predictions = self.model.predict(self.test_x).astype(int)
+        numpy_predictions = self.model.predict(self.test_x).astype(int)
+        self.test_predictions = pd.Series(data=numpy_predictions, dtype="int64")
 
         # assess the performance of the predictions.
         self.assess_performance()
