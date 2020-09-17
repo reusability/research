@@ -7,6 +7,9 @@ Last updated: MB 29/08/2020 - created module.
 # import external libraries.
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.model_selection import GridSearchCV
+from skopt import BayesSearchCV
 
 # import local modules.
 from utils import data_loader
@@ -37,6 +40,37 @@ class BaseModel:
         self.test_y = data['test_y']
         self.test_predictions = pd.Series()    # placeholder for 'test' function.
         self.is_trained = False
+
+    def hyperparameter_tuning(self, type, param_space):
+
+        # definees the type and number of cross validation splits - refer to: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RepeatedStratifiedKFold.html
+        # Repeated Stratified K Fold -> This repeats a stratified k fold n number of times
+        # Stratified k fold -> Shuffles the data once before splitting into n different parts,
+        # where each part is used as a test set 
+        cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
+
+        if type == 'Grid':
+            # Set all the variables for the grid search cross validation 
+            search = GridSearchCV(estimator=self.model, param_space=param_space, cv=cv, scoring='accuracy')
+
+        elif type == 'Bayesian':
+            # defines the bayes search cv with parameters - refer to: https://scikit-optimize.github.io/stable/modules/generated/skopt.BayesSearchCV.html
+            # Bayesian optimisation is a type of sequential method in which it learns from each step what the optimal hyper-parameters are
+            # (in contrast to grid or random search) - using some complicated maths model (im not sure about)       
+            search = BayesSearchCV(estimator=self.model, param_space=param_space, n_jobs=-1, cv=cv)
+
+        # perform the search - i.e. it fits the model on the training data set for the different hyper-parameter settings
+        search_result = search.fit(self.train_x, self.train_y)
+
+        # Prints the results - optimal hyper-parameters and the accuracy score
+        print("The best parameters are %s with a score of %0.2f"
+            % (search_result.best_params_, search_result.best_score_))
+
+        # Displays all of the hyper-parameters combination in descending order of accuracy score
+        grid_results = pd.concat([pd.DataFrame(search_result.cv_results_["params"]),pd.DataFrame(search_result.cv_results_["mean_test_score"], columns=["Accuracy"])],axis=1)
+        grid_results.sort_values(by=['Accuracy'], inplace=True, ascending=False)
+        print(grid_results.head)
+
 
     """
     train the model with current train and test XY values saved as attributes.
@@ -105,6 +139,24 @@ class BaseModel:
 
         # calculate the correlation.
         print("correlation: %.2f" % self.test_y.corr(self.test_predictions))
+
+
+        ###Commented out - seems like relevant evaluaiont information used for classification algorithms 
+        ### printing out acurracy score, confusion matrix as heat map and a classification report 
+        ##Calculate the accuracy of the model 
+        #print("Accuracy: " + self.model.score(self.test_x, self.test_y)) 
+
+        ## Printing out the confusion matrix as a heatmap - comparing the trained y variable
+        ## with the actual y variable 
+        
+        #conf_matrix = confusion_matrix(self.test_y, y_pred)
+        #sns.heatmap(conf_matrix.T, square=True, annot=True, fmt='d', cbar=False)
+        #plt.xlabel('Real Output')
+        #plt.ylabel('Predicted Output')
+
+        ## Evaluating the confusion matrix results 
+        #print(classification_report(self.test_y, y_pred))
+
 
     """
     Convert a pandas dataframe of values into normalized values based on the
