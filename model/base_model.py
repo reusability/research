@@ -51,13 +51,13 @@ class BaseModel:
 
         if type == 'Grid':
             # Set all the variables for the grid search cross validation 
-            search = GridSearchCV(estimator=self.model, param_space=param_space, cv=cv, scoring='accuracy')
+            search = GridSearchCV(estimator=self.model, param_grid=param_space, cv=cv, scoring='accuracy')
 
         elif type == 'Bayesian':
             # defines the bayes search cv with parameters - refer to: https://scikit-optimize.github.io/stable/modules/generated/skopt.BayesSearchCV.html
             # Bayesian optimisation is a type of sequential method in which it learns from each step what the optimal hyper-parameters are
             # (in contrast to grid or random search) - using some complicated maths model (im not sure about)       
-            search = BayesSearchCV(estimator=self.model, param_space=param_space, n_jobs=-1, cv=cv)
+            search = BayesSearchCV(estimator=self.model, param_grid=param_space, n_jobs=-1, cv=cv)
 
         # perform the search - i.e. it fits the model on the training data set for the different hyper-parameter settings
         search_result = search.fit(self.train_x, self.train_y)
