@@ -8,6 +8,8 @@ Last updated: MB 12/08/2020 - created module
 from model.least_squares import LeastSquares
 from model.tree_classifier import TreeClassifier
 from model.nerual_net import NN
+from model.k_nearest_neigbors import KNearestNeighbors
+
 from utils import data_loader, pre_training_analysis_tools
 
 """
@@ -29,10 +31,11 @@ def main():
     data = data_loader.load_2019_dataset(only_proposed=True)
 
     # determine which model we are using.
-    model = LeastSquares(data, normalize=False)
-    model.train()
-    model.describe()
-    model.test()
+    model = KNearestNeighbors(data, normalize=False)
+    #model.hyperparameter_tuning()
+    #model.train()
+    #model.describe()
+    #model.test()
 
 if __name__ == '__main__':
     main()
