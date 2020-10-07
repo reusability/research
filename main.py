@@ -9,6 +9,7 @@ from model.least_squares import LeastSquares
 from model.tree_classifier import TreeClassifier
 from model.nerual_net import NN
 from model.k_nearest_neigbors import KNearestNeighbors
+from model.least_squares import LeastSquares
 
 from utils import data_loader, pre_training_analysis_tools
 
@@ -17,10 +18,13 @@ This function will display a correlation heatmap and scatterplots to assess
 multicollinearity and performance of metrics against the reuse rate.
 """
 def describe_data():
-    data = data_loader.load_2019_dataset(sqaured=False, remove_multicollinearity=False)
-    pre_training_analysis_tools.display_correlation_heatmap(data['test_x'])
-    pre_training_analysis_tools.display_covariance_heatmap(data['test_x'])
-    #pre_training_analysis_tools.display_correlation_scatterplots_xy(data['test_x'], data['test_y'])
+    data = data_loader.load_2020_dataset()
+
+    #pre_training_analysis_tools.display_correlation_heatmap(data['test_x'])
+    #pre_training_analysis_tools.display_covariance_heatmap(data['test_x'])
+
+
+    pre_training_analysis_tools.display_correlation_scatterplots_xy(data['train_x'], data['train_y'])
     #pre_training_analysis_tools.display_correlation_scatterplots_x(data['test_x'])
 
 """
@@ -28,14 +32,14 @@ This is the main function that is run.
 """
 def main():
     # get data to use in this analysis.
-    data = data_loader.load_2019_dataset(only_proposed=True)
+    data = data_loader.load_2020_dataset()
 
     # determine which model we are using.
-    model = KNearestNeighbors(data, normalize=False)
+    model = LeastSquares(data, normalize=True)
     #model.hyperparameter_tuning()
-    #model.train()
-    #model.describe()
-    #model.test()
+    model.train()
+    model.describe()
+    model.test()
 
 if __name__ == '__main__':
     main()
