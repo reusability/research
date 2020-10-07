@@ -39,6 +39,7 @@ class BaseModel:
         self.train_y = data['train_y']
         self.test_y = data['test_y']
         self.test_predictions = pd.Series()    # placeholder for 'test' function.
+        self.train_predictions = pd.Series()    # placeholder for 'test' function.
         self.is_trained = False
 
     def hyperparameter_tuning(self, type, param_space):
@@ -110,23 +111,43 @@ class BaseModel:
 
         print(">> assessing prediction performance...")
 
-        # configure plot.
+        # TRAINING plot. configure Scatter plot of the predicted ReuseRate data
+        # set against the actual ReuseRate data set (as per mavern)
         plt.figure(2)
         plt.axes(aspect='equal')
+        plt.title('TRAINING data - predictions vs actual')
         plt.ylabel('True Value [ReuseRate]')
         plt.xlabel('Predicted Value [ReuseRate]')
-        lims = [min(min(self.test_predictions), min(self.test_y))-1000, max(max(self.test_predictions), max(self.test_y))+1000] # axis limits.
-        plt.xlim(lims)
-        plt.ylim(lims)
-        plt.plot(lims, lims)
+        lims_train = [min(min(self.train_predictions), min(self.train_y))-1000, max(max(self.train_predictions), max(self.train_y))+1000] # axis limits.
+        plt.xlim(lims_train)
+        plt.ylim(lims_train)
+        plt.plot(lims_train, lims_train)
+        plt.scatter(self.train_predictions, self.train_y)
 
-        # Scatter plot of the predicted ReuseRate data set against the actual ReuseRate data set (as per mavern)
+        # print the performance of the predictions on train data.
+        MSE = (self.train_y - self.train_predictions).pow(2).mean()
+        MAE = abs(self.train_y - self.train_predictions).mean()
+        print('train MSE: %.0f' % MSE)
+        print('train MAE: %.0f' % MAE)
+
+        # TESTING plot. configure Scatter plot of the predicted ReuseRate data
+        # set against the actual ReuseRate data set (as per mavern)
+        plt.figure(3)
+        plt.axes(aspect='equal')
+        plt.title('TESTING data - predictions vs actual')
+        plt.ylabel('True Value [ReuseRate]')
+        plt.xlabel('Predicted Value [ReuseRate]')
+        lims_test = [min(min(self.test_predictions), min(self.test_y))-1000, max(max(self.test_predictions), max(self.test_y))+1000] # axis limits.
+        plt.xlim(lims_test)
+        plt.ylim(lims_test)
+        plt.plot(lims_test, lims_test)
         plt.scatter(self.test_predictions, self.test_y)
 
+        # print the performance of the predictions on test data.
         MSE = (self.test_y - self.test_predictions).pow(2).mean()
         MAE = abs(self.test_y - self.test_predictions).mean()
-        print('MSE: %.0f' % MSE)
-        print('MAE: %.0f' % MAE)
+        print('test MSE: %.0f' % MSE)
+        print('test MAE: %.0f' % MAE)
 
 
         ###Commented out - seems like relevant evaluaiont information used for classification algorithms

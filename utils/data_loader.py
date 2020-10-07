@@ -11,7 +11,7 @@ import tensorflow as tf
 
 # define constants.
 DATASET_2019_FILEPATH = r'./data/dataset_2019.csv'  # dataset from https://www.sciencedirect.com/science/article/pii/S235234091931042X
-DATASET_2020_FILEPATH = r'./data/summary_201004.csv'
+DATASET_2020_FILEPATH = r'./data/aggregate_201007.csv'
 DEFAULT_BATCH_SIZE = 32
 
 """
@@ -41,26 +41,18 @@ def load_2020_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
     # define dataset information.
     filepath = DATASET_2020_FILEPATH
     y_column = 'maven_reuse'
-    train_fraction = 0.5
+    train_fraction = 0.8
     unnecessary_columns = ['project', 'release', 'maven_release']
-    only_proposed_columns = ['finalFieldsQty_max',
-        'nosi_max', \
+    only_proposed_columns = [
+        'returnQty_median', \
+        'maxNestedBlocksQty_average', \
         'numbersQty_stdev', \
-        'innerClassesQty_stdev', \
-        'anonymousClassesQty_stdev', \
-        'modifiers_stdev', \
-        'parenthesizedExpsQty_stdev', \
-        'modifiers_median', \
-        'publicMethodsQty_max', \
-        'abstractMethodsQty_max', \
-        'totalMethodsQty_max', \
-        'parenthesizedExpsQty_max', \
-        'dit_stdev', \
-        'lcom_stdev', \
-        'anonymousClassesQty_max', \
-        'lcom_max', \
+        'tcc_stdev', \
+        'lcc_stdev', \
         'numbersQty_max', \
-        'modifiers_average', \
+        'nosi_max', \
+        'visibleFieldsQty_stdev', \
+        'visibleFieldsQty_max'
     ]
     multicollinear_columns = []
 

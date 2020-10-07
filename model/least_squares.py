@@ -61,6 +61,7 @@ class LeastSquares(BaseModel):
 
         # call predict method on the statsmodels.OLS object to predict out of
         # sample oversvations. if prediction is less than 0, change value to 0.
+        self.train_predictions = self.trained_model.predict(self.train_x).astype(int).clip(lower=0)
         self.test_predictions = self.trained_model.predict(self.test_x).astype(int).clip(lower=0)
 
         # assess the performance of the predictions.

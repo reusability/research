@@ -68,10 +68,13 @@ class TreeClassifier(BaseModel):
         # call parent function.
         BaseModel.test(self)
 
-        # call predict method on the sklearn.ExtraTreesClassifier object to
-        # predict out of sample oversvations.
-        numpy_predictions = self.model.predict(self.test_x).astype(int)
-        self.test_predictions = pd.Series(data=numpy_predictions, dtype="int64")
+        # predict TRAINING data. convert to pandas series.
+        numpy_predictions_train = self.model.predict(self.train_x).flatten().astype(int)
+        self.train_predictions = pd.Series(numpy_predictions_train, dtype="int32").clip(lower=0)
+
+        # predict TESTING data. convert to pandas series.
+        numpy_predictions_test = self.model.predict(self.test_x).flatten().astype(int)
+        self.test_predictions = pd.Series(numpy_predictions_test, dtype="int32").clip(lower=0)
 
         # assess the performance of the predictions.
         self.assess_performance()
