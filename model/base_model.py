@@ -8,6 +8,7 @@ Last updated: MB 29/08/2020 - created module.
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.model_selection import RepeatedKFold
 from sklearn.model_selection import GridSearchCV
 from skopt import BayesSearchCV
 
@@ -47,17 +48,24 @@ class BaseModel:
         # Repeated Stratified K Fold -> This repeats a stratified k fold n number of times
         # Stratified k fold -> Shuffles the data once before splitting into n different parts,
         # where each part is used as a test set 
-        cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
+
+        # use this for regression
+        cv = RepeatedKFold(n_splits=2, n_repeats=2, random_state=1)
+        
+        # use this one for classifiation - esp, when there is an inbalance in the classes (i.e. a lot are high reuse rate, 
+        # but barely any are low)
+        # requirement - that the number of different samples in each class (i.e. high reusability) is greater then n_splits
+        # cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
 
         if type == 'Grid':
             # Set all the variables for the grid search cross validation 
-            search = GridSearchCV(estimator=self.model, param_grid=param_space, cv=cv, scoring='accuracy')
+            search = GridSearchCV(estimator=self.model, param_grid=param_space, cv=cv, n_jobs=-1, scoring='accuracy')
 
         elif type == 'Bayesian':
             # defines the bayes search cv with parameters - refer to: https://scikit-optimize.github.io/stable/modules/generated/skopt.BayesSearchCV.html
             # Bayesian optimisation is a type of sequential method in which it learns from each step what the optimal hyper-parameters are
             # (in contrast to grid or random search) - using some complicated maths model (im not sure about)       
-            search = BayesSearchCV(estimator=self.model, param_grid=param_space, n_jobs=-1, cv=cv)
+            search = BayesSearchCV(estimator=self.model, search_spaces=param_space, n_jobs=-1, cv=cv)
 
         # perform the search - i.e. it fits the model on the training data set for the different hyper-parameter settings
         search_result = search.fit(self.train_x, self.train_y)
@@ -70,7 +78,6 @@ class BaseModel:
         grid_results = pd.concat([pd.DataFrame(search_result.cv_results_["params"]),pd.DataFrame(search_result.cv_results_["mean_test_score"], columns=["Accuracy"])],axis=1)
         grid_results.sort_values(by=['Accuracy'], inplace=True, ascending=False)
         print(grid_results.head)
-
 
     """
     train the model with current train and test XY values saved as attributes.
@@ -143,8 +150,6 @@ class BaseModel:
 
         ###Commented out - seems like relevant evaluaiont information used for classification algorithms 
         ### printing out acurracy score, confusion matrix as heat map and a classification report 
-        ##Calculate the accuracy of the model 
-        #print("Accuracy: " + self.model.score(self.test_x, self.test_y)) 
 
         ## Printing out the confusion matrix as a heatmap - comparing the trained y variable
         ## with the actual y variable 
@@ -154,7 +159,13 @@ class BaseModel:
         #plt.xlabel('Real Output')
         #plt.ylabel('Predicted Output')
 
-        ## Evaluating the confusion matrix results 
+        ##Calculate the accuracy of the model 
+        #print("Accuracy: " + self.model.score(self.test_x, self.test_y)) 
+        
+        #Calculate the AUC-ROC curve number - i.e. tells how well the model is a distinguising between different classes
+        #roc_auc_score(self.test_y, y_pred)
+        
+        ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
         #print(classification_report(self.test_y, y_pred))
 
 

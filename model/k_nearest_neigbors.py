@@ -14,6 +14,9 @@ from sklearn.neighbors import KNeighborsClassifier
 # import local modules.
 from model.base_model import BaseModel
 
+#from mlxtend.plotting import plot_decision_regions
+
+
 """
 Define the k-nearest-neighbors class.
 """
@@ -44,6 +47,9 @@ class KNearestNeighbors(BaseModel):
         # Calls the parent function - finds the combination of parameters from the given param_space that 
         # yields the highest score - set to accuracy currently
         BaseModel.hyperparameter_tuning(self, 'Grid', param_space)
+
+        # Plotting decision region
+        #plot_decision_regions(self.train_x, self.train_y, self.model, legend=2)
 
     """
     fit the model with the training data.

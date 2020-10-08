@@ -30,6 +30,23 @@ class TreeClassifier(BaseModel):
         # Selecting the most important features using a tress classifer algorithm# initialise a statsmodels OLS instance.
         self.model = ExtraTreesClassifier()
 
+    def hyperparameter_tuning(self):
+
+        # Defines the parameter search space
+        param_space = {
+            'n_estimators': [10, 100,1000,10000,100000],  # integer valued parameter
+            'max_features': (1, 10)
+            #'max_depth': (1, 100),  
+            #'criterion': ['gini', 'entropy'],
+            #'min_impurity_decrease': (0,100),
+            #'min_impurity_split': (0,100),
+            #'max_depth': (0,100),
+        }
+
+        # Calls the parent function - finds the combination of parameters from the given param_space that 
+        # yields the highest score - set to accuracy currently
+        BaseModel.hyperparameter_tuning(self, 'Bayesian', param_space)
+
     """
     fit the model with the training data.
     """
