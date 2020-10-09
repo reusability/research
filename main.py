@@ -25,12 +25,12 @@ def describe_data():
     #re_training_analysis_tools.variance_threshold(data['test_x'])
     #pre_training_analysis_tools.feature_importance_ExtraTreesClassifier(data['test_x'], data['test_y'])
     #pre_training_analysis_tools.feature_importance_RandomForest(data['test_x'], data['test_y'])
-    #pre_training_analysis_tools.recursive_feature_elimination(data['test_x'], data['test_y'])
-    pre_training_analysis_tools.heatmap_with_dropped_highlycorrelated(data['test_x'], data['test_y'])
+    pre_training_analysis_tools.recursive_feature_elimination(data['test_x'], data['test_y'])
+    #pre_training_analysis_tools.heatmap_with_dropped_highlycorrelated(data['test_x'], data['test_y'])
     #pre_training_analysis_tools.display_covariance_heatmap(data['test_x'])
     #pre_training_analysis_tools.display_correlation_scatterplots_xy(data['test_x'], data['test_y'])
     #pre_training_analysis_tools.display_correlation_scatterplots_x(data['test_x'])
-    pre_training_analysis_tools.remove_collinear_features(data['test_x'], 'maven_reuse', 0.95, 'True')
+    #pre_training_analysis_tools.remove_collinear_features(data['test_x'], 'maven_reuse', 0.95, 'True')
 
 """
 This is the main function that is run.

@@ -126,10 +126,10 @@ def feature_importance_ExtraTreesClassifier(data_x,data_y):
     print(model.feature_importances_) #use inbuilt class feature_importances of tree based classifiers
     #plot graph of feature importances for better visualization
     feat_importances = pd.Series(model.feature_importances_, index=data_x.columns)
-    feat_importances.nlargest(30).plot(kind='barh')
+    feat_importances.nlargest(10).plot(kind='barh')
     plt.show()
     pd.set_option('display.max_rows', None)
-    df = pd.DataFrame(feat_importances.nlargest(200))
+    df = pd.DataFrame(feat_importances.nlargest(10))
     print("ExtraTreesClassifier")
     print(df)
 
@@ -142,8 +142,6 @@ def recursive_feature_elimination(data_x, data_y):
     import pandas as pd 
     from sklearn.feature_selection import RFECV
     from sklearn.svm import SVR
-    from sklearn.linear_model import LogisticRegression
-    from sklearn import preprocessing
 
     estimator = SVR(kernel="linear")
     selector = RFECV(estimator, step=1, cv=2)
@@ -156,7 +154,8 @@ def recursive_feature_elimination(data_x, data_y):
     pd.set_option('display.max_rows', None)
     featureScores = pd.concat([dfcolumns,dfscores,dfselected, dfscore],axis=1)
     featureScores.columns = ['Feature','Ranking', 'Selected', 'Score']  #naming the dataframe columns
-    print(featureScores.nsmallest(50,'Ranking'))  #print 10 best features
+    print('Optimal number of features :', selector.n_features_)
+    print(featureScores.nsmallest(20,'Ranking'))  #print 10 best features
 
 # code is sourced from here: https://stackoverflow.com/questions/29298973/removing-features-with-low-variance-using-scikit-learn
 def variance_threshold(data_x):
