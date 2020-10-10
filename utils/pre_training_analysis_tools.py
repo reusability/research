@@ -96,16 +96,16 @@ def remove_collinear_features(df_model, target_var, threshold, verbose):
 # Chi-Squared: chi2()
 # Mutual Information: mutual_info_classif() and mutual_info_regression()
 
-# Note: ANOVA should be the best metric to use, if the independant data is numerical, and the 
+# Note: ANOVA should be the best metric to use although mutual info is apparently also powerful, if the independant data is numerical, and the 
 # dependent data is categorical 
 def univariate_selection(data_x,data_y):
     import pandas as pd
     import numpy as np
     from sklearn.feature_selection import SelectKBest
-    from sklearn.feature_selection import f_regression
+    from sklearn.feature_selection import  mutual_info_regression
 
     #apply SelectKBest class to extract best features
-    bestfeatures = SelectKBest(score_func=f_regression, k=40)
+    bestfeatures = SelectKBest(score_func= mutual_info_regression, k=20)
     fit = bestfeatures.fit(data_x,data_y)
     dfscores = pd.DataFrame(fit.scores_)
     dfcolumns = pd.DataFrame(data_x.columns)
@@ -113,7 +113,7 @@ def univariate_selection(data_x,data_y):
     pd.set_option('display.max_rows', None)
     featureScores = pd.concat([dfcolumns,dfscores],axis=1)
     featureScores.columns = ['Feature','Score']  #naming the dataframe columns
-    print(featureScores.nlargest(50,'Score'))  #print best features
+    print(featureScores.nlargest(20,'Score'))  #print best features
 
 # using scikit learn , sourced from article (forget where)
 # Note: not viable yet -> need to select a machine learning algo and probably tune it before this
