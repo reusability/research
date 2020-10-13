@@ -32,10 +32,10 @@ This is the main function that is run.
 """
 def main():
     # get data to use in this analysis.
-    data = data_loader.load_2020_dataset(only_proposed=True)
+    data = data_loader.load_2020_dataset()
 
     # determine which model we are using.
-    model = TreeClassifier(data, normalize=True)
+    model = LeastSquares(data, normalize=True)
     #model.hyperparameter_tuning()
     model.train()
     model.describe()
