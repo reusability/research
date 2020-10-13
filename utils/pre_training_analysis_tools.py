@@ -24,6 +24,9 @@ def display_correlation_heatmap(data):
 
 # code sourced from link: https://stackoverflow.com/questions/29294983/how-to-calculate-correlation-between-all-columns-and-remove-highly-correlated-on#44674459
 def remove_collinear_features(df_model, target_var, threshold, verbose):
+    import numpy as np
+    import pandas as pd
+
     '''
     Objective:
         Remove collinear features in a dataframe with a correlation coefficient
@@ -39,9 +42,6 @@ def remove_collinear_features(df_model, target_var, threshold, verbose):
     Output: 
         dataframe that contains only the non-highly-collinear features
     '''
-    import pandas as pd
-    import numpy as np
-    from numpy import round
 
     # Calculate the correlation matrix
     corr_matrix = df_model.drop(target_var, 1).corr()
@@ -142,19 +142,32 @@ def recursive_feature_elimination(data_x, data_y):
     import pandas as pd 
     from sklearn.feature_selection import RFECV
     from sklearn.svm import SVR
+    from sklearn.ensemble import ExtraTreesClassifier
+    from sklearn.neural_network import MLPRegressor
 
-    estimator = SVR(kernel="linear")
-    selector = RFECV(estimator, step=1, cv=2)
-    selector = selector.fit(data_x, data_y)
+    #estimator = SVR(kernel="linear")
+    #estimator = ExtraTreesClassifier()
+    estimator = MLPRegressor(alpha=1e-05, hidden_layer_sizes=(5, 2), random_state=1,
+              solver='lbfgs')
+    visualizer = RFECV(estimator)
+    visualizer = visualizer.fit(data_x, data_y)
 
-    dfscores = pd.DataFrame(selector.ranking_)
-    dfselected = pd.DataFrame(selector.support_)
+    dfscores = pd.DataFrame(visualizer.ranking_)
+    dfselected = pd.DataFrame(visualizer.support_)
     dfcolumns = pd.DataFrame(data_x.columns)
-    dfscore = pd.DataFrame(selector.grid_scores_)
+    dfscore = pd.DataFrame(visualizer.grid_scores_)
     pd.set_option('display.max_rows', None)
     featureScores = pd.concat([dfcolumns,dfscores,dfselected, dfscore],axis=1)
     featureScores.columns = ['Feature','Ranking', 'Selected', 'Score']  #naming the dataframe columns
-    print('Optimal number of features :', selector.n_features_)
+
+    # Plot number of features VS. cross-validation scores
+    plt.figure()
+    plt.xlabel("Number of features selected")
+    plt.ylabel("Cross validation score (nb of correct classifications)")
+    plt.plot(range(1, len(visualizer.grid_scores_) + 1), visualizer.grid_scores_)
+    plt.show()
+
+    print('Optimal number of features :', visualizer.n_features_)
     print(featureScores.nsmallest(20,'Ranking'))  #print 10 best features
 
 # code is sourced from here: https://stackoverflow.com/questions/29298973/removing-features-with-low-variance-using-scikit-learn

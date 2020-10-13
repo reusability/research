@@ -112,7 +112,7 @@ def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
         complete_dataset = complete_dataset[['LCOM5', 'NII', 'TCD', 'PDA', 'DIT', 'constant', 'ReuseRate']]
 
     # separate into train and test datasets.
-    train_x = complete_dataset.sample(frac=0,random_state=0)
+    train_x = complete_dataset.sample(frac=1,random_state=0)
     test_x = complete_dataset.drop(train_x.index)   # remove all training observations.
 
     # split x and y values.
