@@ -39,6 +39,7 @@ class BaseModel:
         self.train_y = data['train_y']
         self.test_y = data['test_y']
         self.test_predictions = pd.Series()    # placeholder for 'test' function.
+        self.train_predictions = pd.Series()    # placeholder for 'test' function.
         self.is_trained = False
 
     def hyperparameter_tuning(self, type, param_space):
@@ -46,17 +47,17 @@ class BaseModel:
         # definees the type and number of cross validation splits - refer to: https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RepeatedStratifiedKFold.html
         # Repeated Stratified K Fold -> This repeats a stratified k fold n number of times
         # Stratified k fold -> Shuffles the data once before splitting into n different parts,
-        # where each part is used as a test set 
+        # where each part is used as a test set
         cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
 
         if type == 'Grid':
-            # Set all the variables for the grid search cross validation 
+            # Set all the variables for the grid search cross validation
             search = GridSearchCV(estimator=self.model, param_grid=param_space, cv=cv, scoring='accuracy')
 
         elif type == 'Bayesian':
             # defines the bayes search cv with parameters - refer to: https://scikit-optimize.github.io/stable/modules/generated/skopt.BayesSearchCV.html
             # Bayesian optimisation is a type of sequential method in which it learns from each step what the optimal hyper-parameters are
-            # (in contrast to grid or random search) - using some complicated maths model (im not sure about)       
+            # (in contrast to grid or random search) - using some complicated maths model (im not sure about)
             search = BayesSearchCV(estimator=self.model, param_grid=param_space, n_jobs=-1, cv=cv)
 
         # perform the search - i.e. it fits the model on the training data set for the different hyper-parameter settings
@@ -110,51 +111,59 @@ class BaseModel:
 
         print(">> assessing prediction performance...")
 
-        # configure plot.
+        # TRAINING plot. configure Scatter plot of the predicted ReuseRate data
+        # set against the actual ReuseRate data set (as per mavern)
         plt.figure(2)
         plt.axes(aspect='equal')
-        plt.xlabel('True Value [ReuseRate]')
-        plt.ylabel('Predicted Value [ReuseRate]')
-        lims = [0, 600] # axis limits.
-        plt.xlim(lims)
-        plt.ylim(lims)
-        plt.plot(lims, lims)
+        plt.title('TRAINING data - predictions vs actual')
+        plt.ylabel('True Value [ReuseRate]')
+        plt.xlabel('Predicted Value [ReuseRate]')
+        lims_train = [min(min(self.train_predictions), min(self.train_y))-1000, max(max(self.train_predictions), max(self.train_y))+1000] # axis limits.
+        plt.xlim(lims_train)
+        plt.ylim(lims_train)
+        plt.plot(lims_train, lims_train)
+        plt.scatter(self.train_predictions, self.train_y)
 
-        # Scatter plot of the predicted ReuseRate data set against the actual ReuseRate data set (as per mavern)
-        plt.scatter(self.test_y, self.test_predictions)
+        # print the performance of the predictions on train data.
+        MSE = (self.train_y - self.train_predictions).pow(2).mean()
+        MAE = abs(self.train_y - self.train_predictions).mean()
+        print('train MSE: %.0f' % MSE)
+        print('train MAE: %.0f' % MAE)
 
-        # calculate the R-squared value between the prediction and actuals.
-        ESS = int(((self.test_predictions - int(self.test_y.mean())).pow(2)).sum())
-        RSS = int(((self.test_y - self.test_predictions).pow(2)).sum())
-        TSS = int(((self.test_y - int(self.test_y.mean())).pow(2)).sum())
+        # TESTING plot. configure Scatter plot of the predicted ReuseRate data
+        # set against the actual ReuseRate data set (as per mavern)
+        plt.figure(3)
+        plt.axes(aspect='equal')
+        plt.title('TESTING data - predictions vs actual')
+        plt.ylabel('True Value [ReuseRate]')
+        plt.xlabel('Predicted Value [ReuseRate]')
+        lims_test = [min(min(self.test_predictions), min(self.test_y))-1000, max(max(self.test_predictions), max(self.test_y))+1000] # axis limits.
+        plt.xlim(lims_test)
+        plt.ylim(lims_test)
+        plt.plot(lims_test, lims_test)
+        plt.scatter(self.test_predictions, self.test_y)
 
-        # the Rsquared value is only valid if TSS = ESS + RSS.
-        # (i am using an epsilon of 10000).
-        if abs(TSS - ESS - RSS) < 100000:
-            print("ESS: "+str(ESS))
-            print("RSS: "+str(RSS))
-            print("TSS: "+str(TSS))
-            r2 = 1 - RSS / TSS
-            print("R-squared: %.2f" % r2)
-
-        # calculate the correlation.
-        print("correlation: %.2f" % self.test_y.corr(self.test_predictions))
+        # print the performance of the predictions on test data.
+        MSE = (self.test_y - self.test_predictions).pow(2).mean()
+        MAE = abs(self.test_y - self.test_predictions).mean()
+        print('test MSE: %.0f' % MSE)
+        print('test MAE: %.0f' % MAE)
 
 
-        ###Commented out - seems like relevant evaluaiont information used for classification algorithms 
-        ### printing out acurracy score, confusion matrix as heat map and a classification report 
-        ##Calculate the accuracy of the model 
-        #print("Accuracy: " + self.model.score(self.test_x, self.test_y)) 
+        ###Commented out - seems like relevant evaluaiont information used for classification algorithms
+        ### printing out acurracy score, confusion matrix as heat map and a classification report
+        ##Calculate the accuracy of the model
+        #print("Accuracy: " + self.model.score(self.test_x, self.test_y))
 
         ## Printing out the confusion matrix as a heatmap - comparing the trained y variable
-        ## with the actual y variable 
-        
+        ## with the actual y variable
+
         #conf_matrix = confusion_matrix(self.test_y, y_pred)
         #sns.heatmap(conf_matrix.T, square=True, annot=True, fmt='d', cbar=False)
         #plt.xlabel('Real Output')
         #plt.ylabel('Predicted Output')
 
-        ## Evaluating the confusion matrix results 
+        ## Evaluating the confusion matrix results
         #print(classification_report(self.test_y, y_pred))
 
 
@@ -176,6 +185,9 @@ class BaseModel:
             # retrieve normalization parameters.
             mean = self.normalization_params[column]['mean']
             std = self.normalization_params[column]['std']
+
+            # if std is zero, set to 1 to prevent NaNs.
+            if std == 0: std = 1
 
             # save the normalized column.
             normalized_values[column] = (x_values[column] - mean) / std

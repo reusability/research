@@ -66,6 +66,9 @@ data_x should be a pandas dataframe and data_y should be a pandas series.
 def display_correlation_scatterplots_xy(data_x, data_y):
     figure_count = 0
 
+    # dictionary with correlation values.
+    correlations = dict()
+
     # iterate over each pair of metrics.
     for i in range(0, len(data_x.keys())):
         # setup plot.
@@ -79,3 +82,10 @@ def display_correlation_scatterplots_xy(data_x, data_y):
 
         # increment figure count.
         figure_count += 1
+
+        # update the correlations dict.
+        correlations[data_x.columns[i]] = data_x[data_x.columns[i]].corr(data_y)
+
+    # print the correlations dict.
+    for metric in correlations:
+        print(metric+': %.2f' % correlations[metric])

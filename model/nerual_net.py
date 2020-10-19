@@ -23,7 +23,7 @@ class NN(BaseModel):
     """
     initialise class instance.
     """
-    def __init__(self, data, hidden_layers = [], epochs=100, validation_split=0.2, normalize=True):
+    def __init__(self, data, hidden_layers = [], epochs=2000, validation_split=0.2, normalize=True):
         # call parent function.
         BaseModel.__init__(self, data, normalize=normalize)
 
@@ -56,7 +56,7 @@ class NN(BaseModel):
 
         # compile the model.
         self.model.compile(loss='mse',
-            optimizer=tf.keras.optimizers.RMSprop(0.001),
+            optimizer=tf.keras.optimizers.RMSprop(0.05),
             metrics=['mae', 'mse'])
 
     """
@@ -73,7 +73,7 @@ class NN(BaseModel):
         # plot fitting the error function over time to Jupyter Notebook.
         plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)
         plotter.plot({'Basic': history}, metric = "mse")
-        plt.ylim([0, 4000])
+        plt.ylim([0, 5000000])
         plt.ylabel('MSE')
 
         # update the is_trained variable.
@@ -90,7 +90,7 @@ class NN(BaseModel):
         print(self.model.summary())
 
         # list the coefficients.
-        #print(self.model.get_weights())
+        print(self.model.get_weights())
 
     """
     generate test predictions based on the fitted model.
@@ -99,14 +99,13 @@ class NN(BaseModel):
         # call parent function.
         BaseModel.test(self)
 
-        # call predict method on the statsmodels.OLS object to predict out of
-        # sample oversvations. convert to pandas series.
-        numpy_predictions = self.model.predict(self.test_x).flatten().astype(int)
-        self.test_predictions = pd.Series(numpy_predictions, dtype="int32")
+        # predict TRAINING data. convert to pandas series.
+        numpy_predictions_train = self.model.predict(self.train_x).flatten().astype(int)
+        self.train_predictions = pd.Series(numpy_predictions_train, dtype="int32").clip(lower=0)
+
+        # predict TESTING data. convert to pandas series.
+        numpy_predictions_test = self.model.predict(self.test_x).flatten().astype(int)
+        self.test_predictions = pd.Series(numpy_predictions_test, dtype="int32").clip(lower=0)
 
         # assess the performance of the predictions.
         self.assess_performance()
-
-        # Evaluating the model (based on training data) on the test data
-        (loss, mae, mse) = self.model.evaluate(self.test_x, self.test_y, verbose=0)
-        print('loss: %0.d, mae: %0.d, mse: %0.d' % (loss, mae, mse))
