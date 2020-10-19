@@ -11,7 +11,7 @@ import tensorflow as tf
 
 # define constants.
 DATASET_2019_FILEPATH = r'./data/dataset_2019.csv'  # dataset from https://www.sciencedirect.com/science/article/pii/S235234091931042X
-DATASET_2020_FILEPATH = r'./data/aggregate_201007.csv'
+DATASET_2020_FILEPATH = r'./data/aggregate_201019.csv'
 DEFAULT_BATCH_SIZE = 32
 
 """

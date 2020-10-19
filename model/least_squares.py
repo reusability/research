@@ -94,5 +94,10 @@ class LeastSquares(BaseModel):
         self.train_predictions = self.trained_model.predict(self.train_x).astype(int).clip(lower=0)
         self.test_predictions = self.trained_model.predict(self.test_x).astype(int).clip(lower=0)
 
+        # to help with finding outliers.
+        #for index, value in self.test_predictions.items():
+            #print('index: '+str(index)+' value: '+str(value))
+            #print(self.test_x.loc[index, :])
+
         # assess the performance of the predictions.
         self.assess_performance()
