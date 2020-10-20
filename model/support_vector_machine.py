@@ -20,9 +20,9 @@ class SupportVectorMachine(BaseModel):
     """
     initialise class instance.
     """
-    def __init__(self, data, normalize=False):
+    def __init__(self, data, normalize=False, **kwargs):
         # call parent function.
-        BaseModel.__init__(self, data, normalize=normalize)
+        BaseModel.__init__(self, data, normalize=normalize, **kwargs)
 
         # placeholders specific to this class.
         self.model = None
@@ -38,7 +38,7 @@ class SupportVectorMachine(BaseModel):
         # call parent function.
         BaseModel.train(self)
 
-        #trains the support-vector-machine model 
+        #trains the support-vector-machine model
         self.model.fit(self.train_x, self.train_y)
 
         # update the is_trained variable.
@@ -58,7 +58,7 @@ class SupportVectorMachine(BaseModel):
         # call parent function.
         BaseModel.test(self)
 
-        # Using model built with training data, to predict the test data - using the predict method in 
+        # Using model built with training data, to predict the test data - using the predict method in
         # sklearn.neighbors.KNeighborsClassifier
         y_pred = self.model.predict(self.test_x)
         self.test_predictions = pd.Series(data=y_pred, dtype="int64")

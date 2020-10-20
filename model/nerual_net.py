@@ -23,9 +23,9 @@ class NN(BaseModel):
     """
     initialise class instance.
     """
-    def __init__(self, data, hidden_layers = [], epochs=2000, validation_split=0.2, normalize=True):
+    def __init__(self, data, hidden_layers = [], epochs=2000, validation_split=0.2, normalize=True, **kwargs):
         # call parent function.
-        BaseModel.__init__(self, data, normalize=normalize)
+        BaseModel.__init__(self, data, normalize=normalize, **kwargs)
 
         # additional attributes specific to this model.
         self.is_trained = False

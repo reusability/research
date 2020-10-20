@@ -21,7 +21,7 @@ class BaseModel:
     """
     store dataset. data is a dictionary.
     """
-    def __init__(self, data, normalize=False):
+    def __init__(self, data, normalize=False, **kwargs):
         print(">> initialising model...")
 
         # if we are normalizing data, save the normalized x value.

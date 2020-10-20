@@ -20,9 +20,9 @@ class LeastSquares(BaseModel):
     """
     initialise class instance.
     """
-    def __init__(self, data, normalize=False, t_value_threshold=2.3):
+    def __init__(self, data, normalize=False, t_value_threshold=2.3, **kwargs):
         # call parent function.
-        BaseModel.__init__(self, data, normalize=normalize)
+        BaseModel.__init__(self, data, normalize=normalize, **kwargs)
 
         # placeholders specific to this class.
         self.model = None

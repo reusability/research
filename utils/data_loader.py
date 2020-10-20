@@ -17,7 +17,7 @@ DEFAULT_BATCH_SIZE = 32
 """
 Return the 2019 dataset in the format of tf.data.Dataset.
 """
-def load_2019_dataset(constant=True, sqaured=False, remove_multicollinearity=False, only_proposed=False):
+def load_2019_dataset(constant=True, sqaured=False, remove_multicollinearity=False, only_proposed=False, **kwargs):
     # define dataset information.
     filepath = DATASET_2019_FILEPATH
     y_column = 'ReuseRate'
@@ -37,7 +37,7 @@ def load_2019_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
 """
 Return the 2020 dataset in the format of tf.data.Dataset.
 """
-def load_2020_dataset(constant=True, sqaured=False, remove_multicollinearity=False, only_proposed=False):
+def load_2020_dataset(constant=True, sqaured=False, remove_multicollinearity=False, only_proposed=False, **kwargs):
     # define dataset information.
     filepath = DATASET_2020_FILEPATH
     y_column = 'maven_reuse'
