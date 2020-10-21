@@ -92,3 +92,5 @@ class TreeClassifier(BaseModel):
 
         # assess the performance of the predictions.
         self.assess_performance()
+
+

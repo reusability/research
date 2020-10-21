@@ -10,7 +10,9 @@ import tensorflow as tf
 
 # define constants.
 DATASET_2019_FILEPATH = r'./data/dataset_2019.csv'  # dataset from https://www.sciencedirect.com/science/article/pii/S235234091931042X
-DATASET_REAL_FILEPATH = r'./data/summary.csv'  # actual dataset 
+DATASET_REAL_FILEPATH = r'./data/aggregate_201019.csv'  # actual dataset 
+#DATASET_REAL_FILEPATH = r'./data/dataset_reduced.csv'  # actual dataset 
+
 DEFAULT_BATCH_SIZE = 32
 
 """
@@ -109,10 +111,10 @@ def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
 
     # if we only want to use the proposed metrics, throw out all other columns.
     if only_proposed is True:
-        complete_dataset = complete_dataset[['LCOM5', 'NII', 'TCD', 'PDA', 'DIT', 'constant', 'ReuseRate']]
+        complete_dataset = complete_dataset[['cbo_max', 'staticMethodsQty_average', 'variablesQty_stdev', 'finalMethodsQty_stdev', 'stringLiteralsQty_stdev', 'visibleFieldsQty_max', 'maven_reuse']]
 
     # separate into train and test datasets.
-    train_x = complete_dataset.sample(frac=1,random_state=0)
+    train_x = complete_dataset.sample(frac=0.8,random_state=0)
     test_x = complete_dataset.drop(train_x.index)   # remove all training observations.
 
     # split x and y values.
