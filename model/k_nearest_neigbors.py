@@ -33,7 +33,7 @@ class KNearestNeighbors(BaseModel):
 
         # Reference to the library used: https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html#sklearn.neighbors.KNeighborsClassifier
         # Initlising the class
-        self.model = KNeighborsClassifier()
+        self.model = KNeighborsClassifier(metric = 'manhattan', n_neighbors = 5, weights = 'distance')
 
     def hyperparameter_tuning(self):
 
