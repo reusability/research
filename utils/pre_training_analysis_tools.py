@@ -25,6 +25,7 @@ def display_correlation_heatmap(data):
 
 
 # code sourced from link: https://stackoverflow.com/questions/29294983/how-to-calculate-correlation-between-all-columns-and-remove-highly-correlated-on#44674459
+# df_model = needs to be pandas df with both x and y 
 def remove_collinear_features(df_model, target_var, threshold, verbose):
     import numpy as np
     import pandas as pd
@@ -188,12 +189,36 @@ def variance_threshold(data_x):
     import pandas as pd
     from sklearn.feature_selection import VarianceThreshold
 
-    selector = VarianceThreshold()
+    selector = VarianceThreshold(threshold=0.0)
     print("Original feature shape:", data_x.shape)
     new_X = selector.fit_transform(data_x)
     print("Transformed feature shape:", new_X.shape)
     data_x = data_x.loc[:, selector.get_support()]
-    print(data_x.columns)
+    return data_x
+
+#from here: https://github.com/erdogant/pca
+def pca(data_x): 
+    from pca import pca
+    # Initialize
+    model = pca()
+    # Fit transform
+    out = model.fit_transform(data_x)
+
+    # Print the top features. The results show that f1 is best, followed by f2 etc
+    print(out['topfeat'])
+
+    #plotting a model to show the percentage of components that represent 95% variance of data
+    model.plot()
+
+    # need to fix it - since to many plots to see the name of the metrics
+    # Create 3D scatter plots
+    model.biplot(legend=False, SPE=True, hotellingt2=True)
+    model.biplot3d(legend=False, SPE=True, hotellingt2=True)
+
+    # Create only the scatter plots
+    model.scatter(legend=False, SPE=True, hotellingt2=True)
+    model.scatter3d(legend=False, SPE=True, hotellingt2=True)
+
 
 # joins the x and y data into one pandas dataframe - called matrix
 def join_dataxy(data_x,data_y):
@@ -205,6 +230,50 @@ def join_dataxy(data_x,data_y):
     pd.set_option('display.max_rows', None)
     matrix = pd.concat([x,y],axis=1)
     return matrix 
+
+# just to get an output score for all models with no parameter tuning
+def all_model_score(data_x,data_y,test_x,test_y):
+    from sklearn.neighbors import NeighborhoodComponentsAnalysis
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.svm import SVC
+    from pylmnn import LargeMarginNearestNeighbor as LMNN
+    from sklearn.metrics import accuracy_score
+
+    knn = KNeighborsClassifier()
+    clf = DecisionTreeClassifier()
+    svc = SVC()
+    lmnn = LMNN()
+
+    knn.fit(data_x, data_y)
+    clf.fit(data_x, data_y)
+    svc.fit(data_x, data_y)
+
+    knn_y_pred = knn.predict(test_x)
+    clf_y_pred = clf.predict(test_x)
+    svc_y_pred = svc.predict(test_x)
+
+    print(accuracy_score(data_y, knn.predict(data_x)))
+    print(accuracy_score(test_y, knn_y_pred))
+
+    print(accuracy_score(data_y, clf.predict(data_x)))
+    print(accuracy_score(test_y, clf_y_pred))
+
+    print(accuracy_score(data_y, svc.predict(data_x)))
+    print(accuracy_score(test_y, knn_y_pred))
+
+    # Train the metric learner
+    lmnn.fit(data_x, data_y)
+    # Fit the nearest neighbors classifier
+    knn = KNeighborsClassifier()
+    knn.fit(lmnn.transform(data_x), data_y)
+
+    lmnn_acc_train = knn.score(lmnn.transform(data_x), data_y)
+    print('LMNN accuracy on train set of {} points: {:.4f}'.format(data_x.shape[0], lmnn_acc_train))
+
+    # Compute the k-nearest neighbor test accuracy after applying the learned transformation
+    lmnn_acc = knn.score(lmnn.transform(test_x), test_y)
+    print('LMNN accuracy on test set of {} points: {:.4f}'.format(test_x.shape[0], lmnn_acc))
 
 """
 This function will display a heatmap of correlations between each metrics. input
@@ -265,3 +334,4 @@ def display_correlation_scatterplots_xy(data_x, data_y):
 
         # increment figure count.
         figure_count += 1
+

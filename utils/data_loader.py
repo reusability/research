@@ -7,6 +7,7 @@ Last update: MB 29/08/2020 - added the ability to square each datapoint.
 # import external libraries.
 import pandas as pd
 import tensorflow as tf
+import numpy as np
 
 # define constants.
 DATASET_2019_FILEPATH = r'./data/dataset_2019.csv'  # dataset from https://www.sciencedirect.com/science/article/pii/S235234091931042X
@@ -93,6 +94,11 @@ def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
     complete_dataset.pop('release')
     complete_dataset.pop('maven_release')
     complete_dataset.pop('class_count')
+    
+    # turn maven reuse into classification
+    complete_dataset['maven_reuse'] = np.where(complete_dataset['maven_reuse'].between(0,44), 1, complete_dataset['maven_reuse'])
+    complete_dataset['maven_reuse'] = np.where(complete_dataset['maven_reuse'].between(45,445), 2, complete_dataset['maven_reuse'])
+    complete_dataset['maven_reuse'] = np.where(complete_dataset['maven_reuse'].between(446,100000), 3, complete_dataset['maven_reuse'])
 
     # if remove_multicollinearity is true, remove highly correlated x values.
     if remove_multicollinearity is True:
@@ -126,7 +132,7 @@ def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
         'train_x': train_x,
         'test_x': test_x,
         'train_y': train_y,
-        'test_y': test_y,
+        'test_y': test_y
     }
 
 """
