@@ -25,7 +25,7 @@ def describe_data():
     #re_training_analysis_tools.variance_threshold(data['test_x'])
     #pre_training_analysis_tools.feature_importance_ExtraTreesClassifier(data['test_x'], data['test_y'])
     #pre_training_analysis_tools.feature_importance_RandomForest(data['test_x'], data['test_y'])
-    #pre_training_analysis_tools.recursive_feature_elimination(data['test_x'], data['test_y'])
+    pre_training_analysis_tools.recursive_feature_elimination(data['test_x'], data['test_y'])
     #pre_training_analysis_tools.heatmap_with_dropped_highlycorrelated(data['test_x'], data['test_y'])
     #pre_training_analysis_tools.display_covariance_heatmap(data['test_x'])
     #pre_training_analysis_tools.display_correlation_scatterplots_xy(data['test_x'], data['test_y'])
@@ -37,10 +37,10 @@ This is the main function that is run.
 """
 def main():
     # get data to use in this analysis.
-    data = data_loader.load_real_dataset(remove_multicollinearity=False, only_proposed=True)
+    data = data_loader.load_real_dataset(remove_multicollinearity=False, only_proposed=False)
 
     # determine which model we are using.
-    model = KNearestNeighbors(data, normalize=True)
+    model = LeastSquares(data, normalize=True)
     #model.hyperparameter_tuning()
     model.train()
     model.describe()

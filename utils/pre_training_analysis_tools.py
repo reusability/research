@@ -22,8 +22,6 @@ def display_correlation_heatmap(data):
     #plot heat map
     g=sns.heatmap(data[top_corr_features].corr(),annot=True,cmap="RdYlGn")
 
-
-
 # code sourced from link: https://stackoverflow.com/questions/29294983/how-to-calculate-correlation-between-all-columns-and-remove-highly-correlated-on#44674459
 def remove_collinear_features(df_model, target_var, threshold, verbose):
     import numpy as np
@@ -50,20 +48,17 @@ def remove_collinear_features(df_model, target_var, threshold, verbose):
     iters = range(len(corr_matrix.columns) - 1)
     drop_cols = []
     dropped_feature = ""
-    drop_feature_name = ""
 
     # Iterate through the correlation matrix and compare correlations
     for i in iters:
         for j in range(i+1): 
             item = corr_matrix.iloc[j:(j+1), (i+1):(i+2)]
-            #print("item:")
-            #print(item)
             col = item.columns
             row = item.index
             val = abs(item.values)
 
             # If correlation exceeds the threshold
-            if (val >= threshold) and (col.values[0] in df_model.columns) and (row.values[0] in df_model.columns):
+            if val >= threshold:
                 # Print the correlated features and the correlation value
                 if verbose:
                     print(col.values[0], "|", row.values[0], "|", round(val[0][0], 2))
@@ -72,25 +67,20 @@ def remove_collinear_features(df_model, target_var, threshold, verbose):
                 if verbose:
                     print("{}: {}".format(col.values[0], np.round(col_value_corr, 3)))
                     print("{}: {}".format(row.values[0], np.round(row_value_corr, 3)))
-                if abs(col_value_corr) < abs(row_value_corr):
+                if col_value_corr < row_value_corr:
                     drop_cols.append(col.values[0])
                     dropped_feature = "dropped: " + col.values[0]
-                    drop_feature_name = col.values[0]
                 else:
                     drop_cols.append(row.values[0])
                     dropped_feature = "dropped: " + row.values[0]
-                    drop_feature_name = row.values[0]
                 if verbose:
                     print(dropped_feature)
                     print("-----------------------------------------------------------------------------")
-            
-            if drop_feature_name in df_model.columns:
-                # Drop one of each pair of correlated columns
-                del df_model[drop_feature_name] # deleting the column from the dataset
-                drop_feature_name = ""
 
-
+    # Drop one of each pair of correlated columns
     drops = set(drop_cols)
+    df_model = df_model.drop(columns=drops)
+
     print("dropped columns: ")
     print(list(drops))
     print("-----------------------------------------------------------------------------")
@@ -112,10 +102,10 @@ def univariate_selection(data_x,data_y):
     import pandas as pd
     import numpy as np
     from sklearn.feature_selection import SelectKBest
-    from sklearn.feature_selection import  mutual_info_classif
+    from sklearn.feature_selection import  mutual_info_regression
 
     #apply SelectKBest class to extract best features
-    bestfeatures = SelectKBest(score_func= mutual_info_classif, k='all')
+    bestfeatures = SelectKBest(score_func= mutual_info_regression, k=20)
     fit = bestfeatures.fit(data_x,data_y)
     dfscores = pd.DataFrame(fit.scores_)
     dfcolumns = pd.DataFrame(data_x.columns)
@@ -127,10 +117,11 @@ def univariate_selection(data_x,data_y):
 
 # using scikit learn , sourced from article (forget where)
 # Note: not viable yet -> need to select a machine learning algo and probably tune it before this
-def feature_importance_ExtraTreesClassifier(data_x,data_y,model):
+def feature_importance_ExtraTreesClassifier(data_x,data_y):
     import pandas as pd
     from sklearn.ensemble import ExtraTreesClassifier
     import matplotlib.pyplot as plt
+    model = ExtraTreesClassifier()
     model.fit(data_x,data_y)
     print(model.feature_importances_) #use inbuilt class feature_importances of tree based classifiers
     #plot graph of feature importances for better visualization
@@ -139,7 +130,7 @@ def feature_importance_ExtraTreesClassifier(data_x,data_y,model):
     plt.show()
     pd.set_option('display.max_rows', None)
     df = pd.DataFrame(feat_importances.nlargest(10))
-    print("Feature Importance Ranking")
+    print("ExtraTreesClassifier")
     print(df)
 
 #using scikit learn - https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFECV.html
@@ -147,22 +138,18 @@ def feature_importance_ExtraTreesClassifier(data_x,data_y,model):
 #the estimator used. It will then compare the mean score from each cross fold, and choose the number of features that
 # had the best score. 
 # Note: not viable yet -> need to select a machine learning algo and probably tune it before this
-def recursive_feature_elimination(data_x, data_y, estimator):
+def recursive_feature_elimination(data_x, data_y):
     import pandas as pd 
     from sklearn.feature_selection import RFECV
     from sklearn.svm import SVR
     from sklearn.ensemble import ExtraTreesClassifier
     from sklearn.neural_network import MLPRegressor
-    from sklearn.model_selection import RepeatedStratifiedKFold
-    from sklearn.ensemble import AdaBoostClassifier
 
     #estimator = SVR(kernel="linear")
-
-    #estimator = AdaBoostClassifier(extra_tree, random_state=0)
-    #estimator = MLPRegressor(alpha=1e-05, hidden_layer_sizes=(5, 2), random_state=1,
-     #         solver='lbfgs')
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
-    visualizer = RFECV(estimator, step=1, cv=cv, scoring='accuracy')
+    #estimator = ExtraTreesClassifier()
+    estimator = MLPRegressor(alpha=1e-05, hidden_layer_sizes=(5, 2), random_state=1,
+              solver='lbfgs')
+    visualizer = RFECV(estimator)
     visualizer = visualizer.fit(data_x, data_y)
 
     dfscores = pd.DataFrame(visualizer.ranking_)

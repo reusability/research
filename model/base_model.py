@@ -11,11 +11,6 @@ from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.model_selection import RepeatedKFold
 from sklearn.model_selection import GridSearchCV
 from skopt import BayesSearchCV
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import classification_report
-
-
-
 
 # import local modules.
 from utils import data_loader
@@ -172,13 +167,6 @@ class BaseModel:
         
         ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
         #print(classification_report(self.test_y, y_pred))
-
-                #
-        print(accuracy_score(self.test_y, self.test_predictions) )
-
-        ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
-        print(classification_report(self.test_y, self.test_predictions))
-
 
 
     """
