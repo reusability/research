@@ -21,7 +21,6 @@ class TreeClassifier(BaseModel):
     """
     def __init__(self, data, normalize=False):
         # call parent function.
-        BaseModel.__init__(self, data, normalize=normalize)
 
         # placeholders specific to this class.
         self.model = None
