@@ -195,6 +195,17 @@ def variance_threshold(data_x):
     data_x = data_x.loc[:, selector.get_support()]
     print(data_x.columns)
 
+# joins the x and y data into one pandas dataframe - called matrix
+def join_dataxy(data_x,data_y):
+    import pandas as pd
+    # since the function below requires both the x and y in a dataframe, this goes through some code to achieve that 
+    x = data_x
+    y = data_y
+    #concat two dataframes for better visualization 
+    pd.set_option('display.max_rows', None)
+    matrix = pd.concat([x,y],axis=1)
+    return matrix 
+
 """
 This function will display a heatmap of correlations between each metrics. input
 should be a pandas dataset.
