@@ -94,7 +94,7 @@ def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
     complete_dataset.pop('release')
     complete_dataset.pop('maven_release')
     complete_dataset.pop('class_count')
-    
+
     # turn maven reuse into classification
     complete_dataset['maven_reuse'] = np.where(complete_dataset['maven_reuse'].between(0,44), 1, complete_dataset['maven_reuse'])
     complete_dataset['maven_reuse'] = np.where(complete_dataset['maven_reuse'].between(45,445), 2, complete_dataset['maven_reuse'])
@@ -117,7 +117,32 @@ def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
 
     # if we only want to use the proposed metrics, throw out all other columns.
     if only_proposed is True:
-        complete_dataset = complete_dataset[['cbo_max', 'staticMethodsQty_average', 'variablesQty_stdev', 'finalMethodsQty_stdev', 'stringLiteralsQty_stdev', 'visibleFieldsQty_max', 'maven_reuse']]
+        #complete_dataset = complete_dataset[['cbo_max', 'staticMethodsQty_average', 'variablesQty_stdev', 'finalMethodsQty_stdev', 'stringLiteralsQty_stdev', 'visibleFieldsQty_max', 'maven_reuse']]
+        complete_dataset = complete_dataset[[
+            'privateMethodsQty_sum',
+            'wmc_stdev',
+            'lcc_stdev',
+            'abstractMethodsQty_stdev',
+            'modifiers_stdev',
+            'privateMethodsQty_max',
+            'innerClassesQty_average',
+            'finalFieldsQty_average',
+            'staticMethodsQty_max',
+            'cbo_average',
+            'parenthesizedExpsQty_max',
+            'returnQty_stdev',
+            'anonymousClassesQty_average',
+            'dit_average',
+            'protectedFieldsQty_stdev',
+            'lambdasQty_max',
+            'stringLiteralsQty_max',
+            'returnQty_max',
+            'maxNestedBlocksQty_average',
+            'returnQty_median',
+            'maven_reuse'
+        ]]
+
+        #
 
     # separate into train and test datasets.
     train_x = complete_dataset.sample(frac=0.8,random_state=0)
@@ -126,6 +151,23 @@ def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
     # split x and y values.
     train_y = train_x.pop('maven_reuse')
     test_y = test_x.pop('maven_reuse')
+
+    # normalising the data - i assume we are meant to when feature analysing or not, either way i did this cause idk how else to
+    # code sourced from here: https://stackoverflow.com/questions/26414913/normalize-columns-of-pandas-data-frame
+    from sklearn import preprocessing
+
+    # for train x
+    x = train_x.values #returns a numpy array
+    min_max_scaler = preprocessing.MinMaxScaler()
+    x_scaled = min_max_scaler.fit_transform(x)
+    train_x = pd.DataFrame(x_scaled, columns=train_x.columns)
+
+    # for test x
+    x = test_x.values #returns a numpy array
+    min_max_scaler = preprocessing.MinMaxScaler()
+    x_scaled = min_max_scaler.fit_transform(x)
+    test_x = pd.DataFrame(x_scaled, columns=test_x.columns)
+    
 
     # return the data split into test and training X and Y values.
     return {

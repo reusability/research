@@ -14,7 +14,8 @@ from skopt import BayesSearchCV
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 
-
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 
 # import local modules.
@@ -152,33 +153,19 @@ class BaseModel:
         # calculate the correlation.
         print("correlation: %.2f" % self.test_y.corr(self.test_predictions))
 
-
-        ###Commented out - seems like relevant evaluaiont information used for classification algorithms 
-        ### printing out acurracy score, confusion matrix as heat map and a classification report 
-
         ## Printing out the confusion matrix as a heatmap - comparing the trained y variable
         ## with the actual y variable 
-        
-        #conf_matrix = confusion_matrix(self.test_y, y_pred)
-        #sns.heatmap(conf_matrix.T, square=True, annot=True, fmt='d', cbar=False)
-        #plt.xlabel('Real Output')
-        #plt.ylabel('Predicted Output')
+
+        conf_matrix = confusion_matrix(self.test_y, self.test_predictions)
+        sns.heatmap(conf_matrix.T, square=True, annot=True, fmt='d', cbar=False)
+        plt.xlabel('Real Output')
+        plt.ylabel('Predicted Output')
 
         ##Calculate the accuracy of the model 
-        #print("Accuracy: " + self.model.score(self.test_x, self.test_y)) 
-        
-        #Calculate the AUC-ROC curve number - i.e. tells how well the model is a distinguising between different classes
-        #roc_auc_score(self.test_y, y_pred)
-        
-        ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
-        #print(classification_report(self.test_y, y_pred))
-
-                #
         print(accuracy_score(self.test_y, self.test_predictions) )
 
         ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
         print(classification_report(self.test_y, self.test_predictions))
-
 
 
     """

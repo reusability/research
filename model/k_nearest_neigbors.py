@@ -89,4 +89,37 @@ class KNearestNeighbors(BaseModel):
         # assess the performance of the predictions.
         self.assess_performance()
 
+        """  # idk how to get graph plot of this
+        import numpy as np
+        import matplotlib.pyplot as plt
+        from matplotlib.colors import ListedColormap
+        from sklearn import neighbors, datasets
+
+        h = .02  # step size in the mesh
+
+        # Create color maps
+        cmap_light = ListedColormap(['#FFAAAA', '#AAFFAA', '#AAAAFF'])
+        cmap_bold = ListedColormap(['#FF0000', '#00FF00', '#0000FF'])
+
+        # Plot the decision boundary. For that, we will assign a color to each
+        # point in the mesh [x_min, x_max]x[y_min, y_max].
+        x_min, x_max = self.test_x.min() - 1, self.test_x.max() + 1
+        y_min, y_max = self.test_y.min() - 1, self.test_y.max() + 1
+        xx, yy = np.meshgrid(np.arange(x_min, x_max, h),
+                            np.arange(y_min, y_max, h))
+        Z = self.model.predict(np.c_[xx.ravel(), yy.ravel()])
+
+        # Put the result into a color plot
+        Z = Z.reshape(xx.shape)
+        plt.figure()
+        plt.pcolormesh(xx, yy, Z, cmap=cmap_light)
+
+        # Plot also the training points
+        plt.scatter(self.test_x, self.test_y, c=y, cmap=cmap_bold)
+        plt.xlim(xx.min(), xx.max())
+        plt.ylim(yy.min(), yy.max())
+        plt.title("3-Class classification")
+
+        plt.show()
+ """
         

@@ -18,6 +18,10 @@ multicollinearity and performance of metrics against the reuse rate.
 """
 def describe_data():
     data = data_loader.load_real_dataset(sqaured=False, remove_multicollinearity=False)
+    output = pre_training_analysis_tools.variance_threshold(data['train_x'])
+    pre_training_analysis_tools.pca(output)
+    pre_training_analysis_tools.all_model_score(data['train_x'],data['train_y'],data['test_x'],data['test_y'])
+
     #data = data_loader.load_real_dataset(sqaured=False, remove_multicollinearity=False)
     #pre_training_analysis_tools.display_correlation_heatmap(data['test_x'])
     #pre_training_analysis_tools.univariate_selection(data['test_x'], data['test_y'])
