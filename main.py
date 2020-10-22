@@ -83,9 +83,13 @@ if __name__ == '__main__':
         # input is 0 or 1.
         elif command_strings[i] == '--normalize': kwargs['normalize'] = command_strings[i+1] == '1'
 
-        # if --sqaured, sqaured is True if input is 1. This is used for data_loader.
+        # if --squared, squared is True if input is 1. This is used for data_loader.
         # input is 0 or 1.
-        elif command_strings[i] == '--sqaured': kwargs['sqaured'] = command_strings[i+1] == '1'
+        elif command_strings[i] == '--squared': kwargs['squared'] = command_strings[i+1] == '1'
+
+        # if --only-proposed, only_proposed is True if input is 1. This is used for data_loader.
+        # input is 0 or 1.
+        elif command_strings[i] == '--only-proposed': kwargs['only_proposed'] = command_strings[i+1] == '1'
 
         # if --epochs, read epoch total.
         # input is int.
@@ -97,7 +101,7 @@ if __name__ == '__main__':
 
         # if --hidden-layers, read the structure of hidden_layers for NN.
         # Input is comma separated integers.
-        elif command_strings[i] == '--hidden-layers': kwargs['hidden_layers'] = command_strings[i+1].split(',')
+        elif command_strings[i] == '--hidden-layers': kwargs['hidden_layers'] = [int(x) for x in command_strings[i+1].split(',')]
 
         # if --t-value-threshold, read the minimum t_value_threshold for OLS.
         # Input is float.

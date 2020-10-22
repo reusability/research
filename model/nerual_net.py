@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 import tensorflow_docs as tfdocs
 import tensorflow_docs.plots
 import tensorflow_docs.modeling
+import tensorflow_model_optimization as tfmot
 
 # import local modules.
 from model.base_model import BaseModel
@@ -54,6 +55,19 @@ class NN(BaseModel):
             # specify the final layer.
             self.model.add(tf.keras.layers.Dense(1, activation='relu'))
 
+        # setup tensorflow object to remove neurons with low magnitude.
+        # https://www.tensorflow.org/model_optimization/guide/pruning/pruning_with_keras
+        prune_low_magnitude = tfmot.sparsity.keras.prune_low_magnitude
+        end_step = np.ceil(300 / 32).astype(np.int32) * epochs
+
+        # Define pruning configuration.
+        pruning_params = {'pruning_schedule': tfmot.sparsity.keras.PolynomialDecay(initial_sparsity=0.50,
+                final_sparsity=0.80, begin_step=0, end_step=end_step)
+            }
+
+        # add the pruning to the model.
+        self.model = prune_low_magnitude(self.model, **pruning_params)
+
         # compile the model.
         self.model.compile(loss='mse',
             optimizer=tf.keras.optimizers.RMSprop(0.05),
@@ -66,9 +80,16 @@ class NN(BaseModel):
         # call parent function.
         BaseModel.train(self)
 
+        # define what happens at the end of each set.
+        callbacks = [
+          tfmot.sparsity.keras.UpdatePruningStep(),
+          tfdocs.modeling.EpochDots()
+        ]
+
+
         # train the model.
         history = self.model.fit(self.train_x, self.train_y, epochs=self.epochs, validation_split=self.validation_split, verbose=0,
-            callbacks=[tfdocs.modeling.EpochDots()])
+            callbacks=callbacks)
 
         # plot fitting the error function over time to Jupyter Notebook.
         plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)

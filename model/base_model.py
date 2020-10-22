@@ -7,6 +7,9 @@ Last updated: MB 29/08/2020 - created module.
 # import external libraries.
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import scipy.stats as stats
 from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.model_selection import GridSearchCV
 from skopt import BayesSearchCV
@@ -149,6 +152,11 @@ class BaseModel:
         print('test MSE: %.0f' % MSE)
         print('test MAE: %.0f' % MAE)
 
+        # create plot of residuals.
+        residuals = sorted([list(self.test_predictions)[i] - list(self.test_y)[i] for i in range(len(self.test_predictions))])
+        plt.figure(4)
+        plt.title('TESTING data - residual distribution')
+        plt.hist(residuals, density=True, histtype='stepfilled', alpha=0.1)
 
         ###Commented out - seems like relevant evaluaiont information used for classification algorithms
         ### printing out acurracy score, confusion matrix as heat map and a classification report
