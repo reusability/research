@@ -11,9 +11,9 @@ import sys
 from utils import data_loader, pre_training_analysis_tools
 
 # import models.
-from model.least_squares import LeastSquares
-from model.tree_classifier import TreeClassifier
-from model.nerual_net import NN
+from model.regression.least_squares import LeastSquares
+from model.regression.tree_regression import TreeRegression
+from model.regression.nerual_net import NN
 from model.k_nearest_neigbors import KNearestNeighbors
 
 """
@@ -47,7 +47,7 @@ def main(**kwargs):
     # switch based on the model keyword. pass through model keywords.
     elif kwargs['model'] == 'NN': model = NN(data, **kwargs)
     elif kwargs['model'] == 'LeastSquares': model = LeastSquares(data, **kwargs)
-    elif kwargs['model'] == 'TreeClassifier': model = TreeClassifier(data, **kwargs)
+    elif kwargs['model'] == 'TreeRegression': model = TreeRegression(data, **kwargs)
     elif kwargs['model'] == 'KNearestNeighbors': model = KNearestNeighbors(data, **kwargs)
 
     # if there was an invalid model input, throw an error.
@@ -106,6 +106,18 @@ if __name__ == '__main__':
         # if --t-value-threshold, read the minimum t_value_threshold for OLS.
         # Input is float.
         elif command_strings[i] == '--t-value-threshold': kwargs['t_value_threshold'] = float(command_strings[i+1])
+
+        # if --n-estimators, read the n_estimators for TreeRegression.
+        # Input is integer.
+        elif command_strings[i] == '--n-estimators': kwargs['n_estimators'] = float(command_strings[i+1])
+
+        # if --max-dpeth, read the max_depth for TreeRegression.
+        # Input is integer.
+        elif command_strings[i] == '--max-depth': kwargs['max_depth'] = float(command_strings[i+1])
+
+        # if --min-samples-leaf, read the min_samples_leaf for TreeRegression.
+        # Input is integer.
+        elif command_strings[i] == '--min-samples-leaf': kwargs['min_samples_leaf'] = float(command_strings[i+1])
 
         i += 2
 

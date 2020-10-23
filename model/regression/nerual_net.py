@@ -2,7 +2,7 @@
 This module will perform a neural network regression on a dataset to attempt to
 predict the reuse rate of classes.
 
-Last update: MB 29/8/2020 - created module from old 'basic_regression' module.
+Last update: MB 23/10/2020 - inherits from RegressionModel instead of BaseModel.
 """
 # import external modules.
 import tensorflow as tf
@@ -15,18 +15,17 @@ import tensorflow_docs.modeling
 import tensorflow_model_optimization as tfmot
 
 # import local modules.
-from model.base_model import BaseModel
-
+from model.regression.regression_model import RegressionModel
 """
 Define the Neural network class.
 """
-class NN(BaseModel):
+class NN(RegressionModel):
     """
     initialise class instance.
     """
     def __init__(self, data, hidden_layers = [], epochs=2000, validation_split=0.2, normalize=True, **kwargs):
         # call parent function.
-        BaseModel.__init__(self, data, normalize=normalize, **kwargs)
+        RegressionModel.__init__(self, data, normalize=normalize, **kwargs)
 
         # additional attributes specific to this model.
         self.is_trained = False
@@ -78,7 +77,7 @@ class NN(BaseModel):
     """
     def train(self):
         # call parent function.
-        BaseModel.train(self)
+        RegressionModel.train(self)
 
         # define what happens at the end of each set.
         callbacks = [
@@ -105,20 +104,26 @@ class NN(BaseModel):
     """
     def describe(self):
         # call parent function.
-        BaseModel.describe(self)
+        RegressionModel.describe(self)
 
         # print structure of NN to screen.
         print(self.model.summary())
 
-        # list the coefficients.
-        print(self.model.get_weights())
+        # print the weights for the first layer of the neural network.
+        for i in range(len(self.test_x.columns)):
+            # if weight is 0, move to next weight.
+            if self.model.get_weights()[0][i][0] == 0:
+                continue
+
+            # if weight is non-zero, print to screen.
+            print(self.test_x.columns[i]+': '+str(self.model.get_weights()[0][i][0]))
 
     """
     generate test predictions based on the fitted model.
     """
     def test(self):
         # call parent function.
-        BaseModel.test(self)
+        RegressionModel.test(self)
 
         # predict TRAINING data. convert to pandas series.
         numpy_predictions_train = self.model.predict(self.train_x).flatten().astype(int)
