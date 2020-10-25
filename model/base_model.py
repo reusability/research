@@ -85,6 +85,9 @@ class BaseModel:
         grid_results.sort_values(by=['Accuracy'], inplace=True, ascending=False)
         print(grid_results.head)
 
+    def find_hyperparams(self):
+        print("tunning parameter.")
+
     """
     train the model with current train and test XY values saved as attributes.
     """

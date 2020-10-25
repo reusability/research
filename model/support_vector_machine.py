@@ -9,6 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import svm
+from skopt.space import Real, Categorical, Integer
 
 # import local modules.
 from model.base_model import BaseModel
@@ -29,7 +30,24 @@ class SupportVectorMachine(BaseModel):
 
         # Reference to the library used: https://scikit-learn.org/stable/modules/svm.html
         # Initlising the class
-        self.model = svm.SVC()
+        self.model = svm.SVC(C=10,gamma=1750,kernel='rbf')
+
+    def hyperparameter_tuning(self):
+
+        # Defines the parameter search space
+        param_space = {
+                'C': Integer(1,500),  
+                'gamma': Real(0.001,30), 
+                'kernel': Categorical(['rbf','linear','sigmoid']),
+                'decision_function_shape': Categorical(['ovo','ovr'])
+            }
+
+        # Calls the parent function - finds the combination of parameters from the given param_space that 
+        # yields the highest score - set to accuracy currently
+        BaseModel.hyperparameter_tuning(self, 'Bayesian', param_space)
+
+        # Plotting decision region
+        #plot_decision_regions(self.train_x, self.train_y, self.model, legend=2)    
 
     """
     fit the model with the training data.

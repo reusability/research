@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from sklearn.neighbors import KNeighborsClassifier
+from skopt.space import Real, Categorical, Integer
 
 # import local modules.
 from model.base_model import BaseModel
@@ -33,20 +34,23 @@ class KNearestNeighbors(BaseModel):
 
         # Reference to the library used: https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html#sklearn.neighbors.KNeighborsClassifier
         # Initlising the class
-        self.model = KNeighborsClassifier(metric = 'manhattan', n_neighbors = 5, weights = 'distance')
+        self.model = KNeighborsClassifier(leaf_size=1, metric='manhattan', 
+                             n_neighbors=23, p=0.1, weights='distance')
 
     def hyperparameter_tuning(self):
 
         # Defines the parameter search space
         param_space = {
-            'n_neighbors': (1, 100),  # integer valued parameter
-            'weights': ['uniform', 'distance'],  # categorical parameter
-            'metric': ['euclidean', 'manhattan', 'minkowski'] # categorical parameter
+            'n_neighbors': Integer(1,50),  # integer valued parameter
+            'weights': Categorical(['uniform', 'distance']),  # categorical parameter
+            'metric': Categorical(['euclidean', 'manhattan', 'minkowski']), # categorical parameter
+            'p': Integer(1,20),
+            'leaf_size': Integer(1,60)
         }
 
         # Calls the parent function - finds the combination of parameters from the given param_space that 
         # yields the highest score - set to accuracy currently
-        BaseModel.hyperparameter_tuning(self, 'Grid', param_space)
+        BaseModel.hyperparameter_tuning(self, 'Bayesian', param_space)
 
         # Plotting decision region
         #plot_decision_regions(self.train_x, self.train_y, self.model, legend=2)

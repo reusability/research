@@ -67,7 +67,7 @@ def load_2019_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
         complete_dataset = complete_dataset[['LCOM5', 'NII', 'TCD', 'PDA', 'DIT', 'constant', 'ReuseRate']]
 
     # separate into train and test datasets.
-    train_x = complete_dataset.sample(frac=0.8,random_state=0)
+    train_x = complete_dataset.sample(frac=1.0,random_state=0)
     test_x = complete_dataset.drop(train_x.index)   # remove all training observations.
 
     # split x and y values.
@@ -82,7 +82,7 @@ def load_2019_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
         'test_y': test_y,
     }
 
-def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=False, only_proposed=False):
+def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=False, only_proposed=False, only_pca=False, only_dt=False, cfs_mi=False):
     # read dataset from csv.
     complete_dataset = pd.read_csv(DATASET_REAL_FILEPATH)
 
@@ -142,7 +142,53 @@ def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
             'maven_reuse'
         ]]
 
-        #
+    if only_pca is True:
+        complete_dataset = complete_dataset[[
+        'privateMethodsQty_sum',		
+        'maxNestedBlocksQty_median',		
+        'lcc_min',		
+        'abstractMethodsQty_stdev',	
+        'parenthesizedExpsQty_max',	
+        'modifiers_stdev',	
+        'modifiers_min',	
+        'dit_median',		
+        'loc_stdev',		
+        'modifiers_average',		
+        'totalFieldsQty_stdev',	
+        'defaultMethodsQty_max',		
+        'lambdasQty_average',		
+        'staticMethodsQty_max',	
+        'anonymousClassesQty_average',		
+        'loc_max',		
+        'anonymousClassesQty_stdev',	
+        'lcc_median',	
+        'stringLiteralsQty_stdev',		
+        'defaultMethodsQty_median',		
+        'finalFieldsQty_median',		
+        'modifiers_max',		
+        'stringLiteralsQty_max',		
+        'returnQty_median',		
+        'maxNestedBlocksQty_max',
+        'maven_reuse'
+    ]]	
+
+    if only_dt is True:
+        complete_dataset = complete_dataset[[
+        'parenthesizedExpsQty_stdev',		
+        'uniqueWordsQty_stdev',		
+        'returnQty_median',		
+        'staticMethodsQty_stdev',	
+        'finalFieldsQty_average',	
+        'defaultFieldsQty_max',	
+        'variablesQty_stdev',	
+        'maven_reuse'
+    ]]	
+
+    if cfs_mi is True:
+        complete_dataset = complete_dataset[[
+        'wmc_sum','lcom_average','cbo_sum','tryCatchQty_stdev','loopQty_average','tryCatchQty_average','publicMethodsQty_stdev','comparisonsQty_sum','lcom_stdev',
+        'lambdasQty_max','loopQty_stdev','staticFieldsQty_stdev','maven_reuse'
+        ]]
 
     # separate into train and test datasets.
     train_x = complete_dataset.sample(frac=0.8,random_state=0)
@@ -163,10 +209,10 @@ def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
     train_x = pd.DataFrame(x_scaled, columns=train_x.columns)
 
     # for test x
-    x = test_x.values #returns a numpy array
-    min_max_scaler = preprocessing.MinMaxScaler()
-    x_scaled = min_max_scaler.fit_transform(x)
-    test_x = pd.DataFrame(x_scaled, columns=test_x.columns)
+    #x = test_x.values #returns a numpy array
+    #min_max_scaler = preprocessing.MinMaxScaler()
+    #x_scaled = min_max_scaler.fit_transform(x)
+    #test_x = pd.DataFrame(x_scaled, columns=test_x.columns) 
     
 
     # return the data split into test and training X and Y values.

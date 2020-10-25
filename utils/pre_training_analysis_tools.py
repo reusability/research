@@ -148,7 +148,7 @@ def feature_importance_ExtraTreesClassifier(data_x,data_y,model):
 #the estimator used. It will then compare the mean score from each cross fold, and choose the number of features that
 # had the best score. 
 # Note: not viable yet -> need to select a machine learning algo and probably tune it before this
-def recursive_feature_elimination(data_x, data_y, estimator):
+def recursive_feature_elimination(data_x, data_y):
     import pandas as pd 
     from sklearn.feature_selection import RFECV
     from sklearn.svm import SVR
@@ -156,13 +156,16 @@ def recursive_feature_elimination(data_x, data_y, estimator):
     from sklearn.neural_network import MLPRegressor
     from sklearn.model_selection import RepeatedStratifiedKFold
     from sklearn.ensemble import AdaBoostClassifier
+    from sklearn.tree import DecisionTreeClassifier
 
     #estimator = SVR(kernel="linear")
 
     #estimator = AdaBoostClassifier(extra_tree, random_state=0)
     #estimator = MLPRegressor(alpha=1e-05, hidden_layer_sizes=(5, 2), random_state=1,
      #         solver='lbfgs')
-    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
+    estimator = DecisionTreeClassifier()
+
+    cv = RepeatedStratifiedKFold(n_splits=7, n_repeats=7, random_state=1)
     visualizer = RFECV(estimator, step=1, cv=cv, scoring='accuracy')
     visualizer = visualizer.fit(data_x, data_y)
 
@@ -185,7 +188,7 @@ def recursive_feature_elimination(data_x, data_y, estimator):
     print(featureScores.nsmallest(20,'Ranking'))  #print 10 best features
 
 # code is sourced from here: https://stackoverflow.com/questions/29298973/removing-features-with-low-variance-using-scikit-learn
-def variance_threshold(data_x):
+def variance_threshold(data_x, data_y):
     import pandas as pd
     from sklearn.feature_selection import VarianceThreshold
 
@@ -194,7 +197,15 @@ def variance_threshold(data_x):
     new_X = selector.fit_transform(data_x)
     print("Transformed feature shape:", new_X.shape)
     data_x = data_x.loc[:, selector.get_support()]
-    return data_x
+
+    # since the function below requires both the x and y in a dataframe, this goes through some code to achieve that 
+    x = data_x
+    y = data_y
+    #concat two dataframes for better visualization 
+    pd.set_option('display.max_rows', None)
+    matrix = pd.concat([x,y],axis=1)
+
+    return matrix
 
 #from here: https://github.com/erdogant/pca
 def pca(data_x): 
@@ -212,8 +223,8 @@ def pca(data_x):
 
     # need to fix it - since to many plots to see the name of the metrics
     # Create 3D scatter plots
-    model.biplot(legend=False, SPE=True, hotellingt2=True)
-    model.biplot3d(legend=False, SPE=True, hotellingt2=True)
+    #model.biplot(legend=False, SPE=True, hotellingt2=True)
+    #model.biplot3d(legend=False, SPE=True, hotellingt2=True)
 
     # Create only the scatter plots
     model.scatter(legend=False, SPE=True, hotellingt2=True)
@@ -231,6 +242,40 @@ def join_dataxy(data_x,data_y):
     matrix = pd.concat([x,y],axis=1)
     return matrix 
 
+#take in matrix xy and split it
+def split_dataxy(data_xy):
+    import pandas as pd
+    # since the function below requires both the x and y in a dataframe, this goes through some code to achieve that 
+    data_xy.dropna(axis=0, inplace=True)
+
+    x = data_xy
+    y = data_xy.pop('maven_reuse')
+
+    return {
+        'train_x': x,
+        'train_y': y
+    }  
+
+# take in matrix xy and split it into train and test 
+def generate_train_test_xy(dataxy):
+
+    # some reasons nan are appended throuhgout process, remove here 
+    dataxy.dropna(axis=0, how='any', inplace=True)
+
+    # separate into train and test datasets.
+    train_x = dataxy.sample(frac=0.8,random_state=0)
+    test_x = dataxy.drop(train_x.index)   # remove all training observations.
+
+    # split x and y values.
+    train_y = train_x.pop('maven_reuse')
+    test_y = test_x.pop('maven_reuse')
+    return {
+        'train_x': train_x,
+        'test_x': test_x,
+        'train_y': train_y,
+        'test_y': test_y,
+    } 
+
 # just to get an output score for all models with no parameter tuning
 def all_model_score(data_x,data_y,test_x,test_y):
     from sklearn.neighbors import NeighborhoodComponentsAnalysis
@@ -239,28 +284,59 @@ def all_model_score(data_x,data_y,test_x,test_y):
     from sklearn.svm import SVC
     from pylmnn import LargeMarginNearestNeighbor as LMNN
     from sklearn.metrics import accuracy_score
+    from sklearn.metrics import classification_report
+    import numpy as np
 
+    #knn = KNeighborsClassifier(leaf_size=1, metric='minkowski', n_neighbors=7, p=4, weights='distance')
+    #clf = DecisionTreeClassifier(criterion='entropy', max_depth=6, max_features=8, min_impurity_decrease=0)
+    #svc = SVC(C=50, decision_function_shape='ovo', gamma=1, kernel='rbf')
+    #knn = KNeighborsClassifier(leaf_size=1, metric='manhattan', n_neighbors=6, p=1, weights='distance')
+    #clf = DecisionTreeClassifier(criterion='gini', max_depth=10, max_features=12, min_samples_leaf=2, min_samples_split=2)
+    
     knn = KNeighborsClassifier()
+
+    def w_dist(x, y, **kwargs):
+        return sum(kwargs["weights"]*((x-y)*(x-y)))
+        
+    wkn = knn = KNeighborsClassifier(metric=w_dist, p=2, 
+                           metric_params={'weights': np.random.random(data_x.shape[1])})
     clf = DecisionTreeClassifier()
     svc = SVC()
     lmnn = LMNN()
 
     knn.fit(data_x, data_y)
+    wkn.fit(data_x, data_y)
     clf.fit(data_x, data_y)
     svc.fit(data_x, data_y)
 
     knn_y_pred = knn.predict(test_x)
+    wkn_y_pred = knn.predict(test_x)
     clf_y_pred = clf.predict(test_x)
     svc_y_pred = svc.predict(test_x)
 
+    print('knn accuracy:')
     print(accuracy_score(data_y, knn.predict(data_x)))
     print(accuracy_score(test_y, knn_y_pred))
+    ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
+    print(classification_report(test_y, knn_y_pred))
 
+    print('wkn accuracy:')
+    print(accuracy_score(data_y, wkn.predict(data_x)))
+    print(accuracy_score(test_y, wkn_y_pred))
+    ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
+    print(classification_report(test_y, knn_y_pred))
+
+    print('decision tree accuracy:')
     print(accuracy_score(data_y, clf.predict(data_x)))
     print(accuracy_score(test_y, clf_y_pred))
+    ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
+    print(classification_report(test_y, clf_y_pred))
 
+    print('svm accuracy:')
     print(accuracy_score(data_y, svc.predict(data_x)))
-    print(accuracy_score(test_y, knn_y_pred))
+    print(accuracy_score(test_y, svc_y_pred))
+    ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
+    print(classification_report(test_y, svc_y_pred))
 
     # Train the metric learner
     lmnn.fit(data_x, data_y)
@@ -274,6 +350,9 @@ def all_model_score(data_x,data_y,test_x,test_y):
     # Compute the k-nearest neighbor test accuracy after applying the learned transformation
     lmnn_acc = knn.score(lmnn.transform(test_x), test_y)
     print('LMNN accuracy on test set of {} points: {:.4f}'.format(test_x.shape[0], lmnn_acc))
+
+    ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
+    #print(classification_report(test_y, lmnn_acc))
 
 """
 This function will display a heatmap of correlations between each metrics. input
