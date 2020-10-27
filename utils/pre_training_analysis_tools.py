@@ -124,7 +124,7 @@ def univariate_selection(data_x,data_y):
     pd.set_option('display.max_rows', None)
     featureScores = pd.concat([dfcolumns,dfscores],axis=1)
     featureScores.columns = ['Feature','Score']  #naming the dataframe columns
-    print(featureScores.nlargest(20,'Score'))  #print best features
+    print(featureScores.nlargest(50,'Score'))  #print best features
 
 # using scikit learn , sourced from article (forget where)
 # Note: not viable yet -> need to select a machine learning algo and probably tune it before this
@@ -202,8 +202,10 @@ def variance_threshold(data_x, data_y):
     x = data_x
     y = data_y
     #concat two dataframes for better visualization 
+    y.reset_index(drop=True)
     pd.set_option('display.max_rows', None)
     matrix = pd.concat([x,y],axis=1)
+    matrix = matrix.reset_index()
 
     return matrix
 
@@ -237,7 +239,9 @@ def join_dataxy(data_x,data_y):
     # since the function below requires both the x and y in a dataframe, this goes through some code to achieve that 
     x = data_x
     y = data_y
+
     #concat two dataframes for better visualization 
+    y.reset_index(drop=True)
     pd.set_option('display.max_rows', None)
     matrix = pd.concat([x,y],axis=1)
     return matrix 
@@ -245,9 +249,6 @@ def join_dataxy(data_x,data_y):
 #take in matrix xy and split it
 def split_dataxy(data_xy):
     import pandas as pd
-    # since the function below requires both the x and y in a dataframe, this goes through some code to achieve that 
-    data_xy.dropna(axis=0, inplace=True)
-
     x = data_xy
     y = data_xy.pop('maven_reuse')
 
@@ -258,10 +259,6 @@ def split_dataxy(data_xy):
 
 # take in matrix xy and split it into train and test 
 def generate_train_test_xy(dataxy):
-
-    # some reasons nan are appended throuhgout process, remove here 
-    dataxy.dropna(axis=0, how='any', inplace=True)
-
     # separate into train and test datasets.
     train_x = dataxy.sample(frac=0.8,random_state=0)
     test_x = dataxy.drop(train_x.index)   # remove all training observations.
@@ -286,6 +283,7 @@ def all_model_score(data_x,data_y,test_x,test_y):
     from sklearn.metrics import accuracy_score
     from sklearn.metrics import classification_report
     import numpy as np
+    from sklearn.model_selection import cross_val_score
 
     #knn = KNeighborsClassifier(leaf_size=1, metric='minkowski', n_neighbors=7, p=4, weights='distance')
     #clf = DecisionTreeClassifier(criterion='entropy', max_depth=6, max_features=8, min_impurity_decrease=0)
@@ -297,7 +295,7 @@ def all_model_score(data_x,data_y,test_x,test_y):
 
     def w_dist(x, y, **kwargs):
         return sum(kwargs["weights"]*((x-y)*(x-y)))
-        
+
     wkn = knn = KNeighborsClassifier(metric=w_dist, p=2, 
                            metric_params={'weights': np.random.random(data_x.shape[1])})
     clf = DecisionTreeClassifier()
@@ -315,24 +313,36 @@ def all_model_score(data_x,data_y,test_x,test_y):
     svc_y_pred = svc.predict(test_x)
 
     print('knn accuracy:')
+    scores = cross_val_score(knn, data_x, data_y, cv=5)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+    scores = cross_val_score(knn, test_x, test_y, cv=5)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
     print(accuracy_score(data_y, knn.predict(data_x)))
     print(accuracy_score(test_y, knn_y_pred))
     ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
     print(classification_report(test_y, knn_y_pred))
 
-    print('wkn accuracy:')
-    print(accuracy_score(data_y, wkn.predict(data_x)))
-    print(accuracy_score(test_y, wkn_y_pred))
+    #print('wkn accuracy:')
+    #print(accuracy_score(data_y, wkn.predict(data_x)))
+    #print(accuracy_score(test_y, wkn_y_pred))
     ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
-    print(classification_report(test_y, knn_y_pred))
+    #print(classification_report(test_y, knn_y_pred))
 
     print('decision tree accuracy:')
+    scores = cross_val_score(clf, data_x, data_y, cv=5)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+    scores = cross_val_score(clf, test_x, test_y, cv=5)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
     print(accuracy_score(data_y, clf.predict(data_x)))
     print(accuracy_score(test_y, clf_y_pred))
     ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
     print(classification_report(test_y, clf_y_pred))
 
     print('svm accuracy:')
+    scores = cross_val_score(svc, data_x, data_y, cv=5)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+    scores = cross_val_score(svc, test_x, test_y, cv=5)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
     print(accuracy_score(data_y, svc.predict(data_x)))
     print(accuracy_score(test_y, svc_y_pred))
     ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
@@ -353,6 +363,42 @@ def all_model_score(data_x,data_y,test_x,test_y):
 
     ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
     #print(classification_report(test_y, lmnn_acc))
+
+def model_tuning(data_x,data_y,test_x,test_y,model,param_space):
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    from sklearn.model_selection import RepeatedStratifiedKFold
+    from sklearn.model_selection import RepeatedKFold
+    from sklearn.model_selection import GridSearchCV
+    from skopt import BayesSearchCV
+    from sklearn.metrics import accuracy_score
+    from sklearn.metrics import classification_report
+
+    from sklearn.metrics import confusion_matrix
+
+    cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
+
+    # defines the bayes search cv with parameters - refer to: https://scikit-optimize.github.io/stable/modules/generated/skopt.BayesSearchCV.html
+    # Bayesian optimisation is a type of sequential method in which it learns from each step what the optimal hyper-parameters are
+    # (in contrast to grid or random search) - using some complicated maths model (im not sure about)       
+    search = BayesSearchCV(estimator=model, search_spaces=param_space, n_jobs=-1, cv=cv, refit=True)
+
+    # perform the search - i.e. it fits the model on the training data set for the different hyper-parameter settings
+    search_result = search.fit(data_x, data_y)
+
+    # Prints the results - optimal hyper-parameters and the accuracy score
+    print("The best parameters are %s with a score of %0.2f"
+        % (search_result.best_params_, search_result.best_score_))
+
+    print("scores")
+    search.score(data_x, data_y)
+    search.score(test_x, test_y)
+
+    # Displays all of the hyper-parameters combination in descending order of accuracy score
+    #grid_results = pd.concat([pd.DataFrame(search_result.cv_results_["params"]),pd.DataFrame(search_result.cv_results_["mean_test_score"], columns=["Accuracy"])],axis=1)
+    #grid_results.sort_values(by=['Accuracy'], inplace=True, ascending=False)
+    #print(grid_results.head)
+
 
 """
 This function will display a heatmap of correlations between each metrics. input

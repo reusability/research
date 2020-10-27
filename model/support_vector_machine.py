@@ -21,7 +21,7 @@ class SupportVectorMachine(BaseModel):
     """
     initialise class instance.
     """
-    def __init__(self, data, normalize=False):
+    def __init__(self, data, normalize=False, model=svm.SVC()):
         # call parent function.
         BaseModel.__init__(self, data, normalize=normalize)
 
@@ -30,16 +30,16 @@ class SupportVectorMachine(BaseModel):
 
         # Reference to the library used: https://scikit-learn.org/stable/modules/svm.html
         # Initlising the class
-        self.model = svm.SVC(C=10,gamma=1750,kernel='rbf')
+        self.model = model
+        #svm.SVC(C=10,gamma=1750,kernel='rbf')
 
     def hyperparameter_tuning(self):
 
         # Defines the parameter search space
         param_space = {
-                'C': Integer(1,500),  
-                'gamma': Real(0.001,30), 
+                'C': Integer(1,10),  
+                'gamma': Real(0.001,10), 
                 'kernel': Categorical(['rbf','linear','sigmoid']),
-                'decision_function_shape': Categorical(['ovo','ovr'])
             }
 
         # Calls the parent function - finds the combination of parameters from the given param_space that 

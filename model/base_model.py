@@ -13,6 +13,7 @@ from sklearn.model_selection import GridSearchCV
 from skopt import BayesSearchCV
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
+from sklearn.model_selection import cross_val_score
 
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
@@ -56,22 +57,22 @@ class BaseModel:
         # where each part is used as a test set 
 
         # use this for regression
-        cv = RepeatedKFold(n_splits=2, n_repeats=2, random_state=1)
+        #cv = RepeatedKFold(n_splits=2, n_repeats=2, random_state=1)
         
         # use this one for classifiation - esp, when there is an inbalance in the classes (i.e. a lot are high reuse rate, 
         # but barely any are low)
         # requirement - that the number of different samples in each class (i.e. high reusability) is greater then n_splits
-        # cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
+        cv = RepeatedStratifiedKFold(n_splits=5, n_repeats=3, random_state=1)
 
         if type == 'Grid':
             # Set all the variables for the grid search cross validation 
-            search = GridSearchCV(estimator=self.model, param_grid=param_space, cv=cv, n_jobs=-1, scoring='accuracy')
+            search = GridSearchCV(estimator=self.model, param_grid=param_space, cv=cv, n_jobs=-1, scoring='accuracy', refit=True)
 
         elif type == 'Bayesian':
             # defines the bayes search cv with parameters - refer to: https://scikit-optimize.github.io/stable/modules/generated/skopt.BayesSearchCV.html
             # Bayesian optimisation is a type of sequential method in which it learns from each step what the optimal hyper-parameters are
             # (in contrast to grid or random search) - using some complicated maths model (im not sure about)       
-            search = BayesSearchCV(estimator=self.model, search_spaces=param_space, n_jobs=-1, cv=cv)
+            search = BayesSearchCV(estimator=self.model, search_spaces=param_space, n_jobs=-1, cv=cv, refit=True)
 
         # perform the search - i.e. it fits the model on the training data set for the different hyper-parameter settings
         search_result = search.fit(self.train_x, self.train_y)
@@ -79,6 +80,11 @@ class BaseModel:
         # Prints the results - optimal hyper-parameters and the accuracy score
         print("The best parameters are %s with a score of %0.2f"
             % (search_result.best_params_, search_result.best_score_))
+
+        print("score")
+        search.score(self.train_x, self.train_y)
+        print("score")
+        search.score(self.test_x, self.test_y)
 
         # Displays all of the hyper-parameters combination in descending order of accuracy score
         grid_results = pd.concat([pd.DataFrame(search_result.cv_results_["params"]),pd.DataFrame(search_result.cv_results_["mean_test_score"], columns=["Accuracy"])],axis=1)
@@ -165,7 +171,14 @@ class BaseModel:
         plt.ylabel('Predicted Output')
 
         ##Calculate the accuracy of the model 
+        print(accuracy_score(self.train_y, self.model.predict(self.train_x)))
         print(accuracy_score(self.test_y, self.test_predictions) )
+        
+
+        #scores = cross_val_score(self.model, self.train_x, self.train_y, cv=5)
+        #print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+        #scores = cross_val_score(self.model, self.test_x, self.test_y, cv=5)
+        #print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
         ## Evaluating the confusion matrix results - includes precission, recall, f1-score, support
         print(classification_report(self.test_y, self.test_predictions))

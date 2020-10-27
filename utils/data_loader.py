@@ -82,7 +82,8 @@ def load_2019_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
         'test_y': test_y,
     }
 
-def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=False, only_proposed=False, only_pca=False, only_dt=False, cfs_mi=False):
+def load_real_dataset(constant=False, sqaured=False, normalise=False, remove_multicollinearity=False, only_proposed=False, only_pca=False, only_dt=False, cfs_mi=False, cfs=False, wrapper_knn=False,
+                    top20_mi=False, wrapper_svm=False, shap_dt=False):
     # read dataset from csv.
     complete_dataset = pd.read_csv(DATASET_REAL_FILEPATH)
 
@@ -94,6 +95,9 @@ def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
     complete_dataset.pop('release')
     complete_dataset.pop('maven_release')
     complete_dataset.pop('class_count')
+
+    if normalise is True:
+        get_normalization_params(complete_dataset)
 
     # turn maven reuse into classification
     complete_dataset['maven_reuse'] = np.where(complete_dataset['maven_reuse'].between(0,44), 1, complete_dataset['maven_reuse'])
@@ -190,30 +194,55 @@ def load_real_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
         'lambdasQty_max','loopQty_stdev','staticFieldsQty_stdev','maven_reuse'
         ]]
 
+    if cfs is True:
+        complete_dataset = complete_dataset.iloc[:, [0, 114,  31, 178,  11, 156, 202,  80,  33,  12,  17,  42,  50,
+       160,  51,  32,  54,  56,  78,  79, 115,263]]
+
+       #'stringLiteralsQty_max','publicFieldsQty_sum','finalFieldsQty_median','parenthesizedExpsQty_min','protectedFieldsQty_max',
+       #'defaultFieldsQty_median','defaultMethodsQty_average',''
+
+    #if wrapper_knn is True:
+    #    complete_dataset = complete_dataset[[
+    #    'synchronizedMethodsQty_average', 'modifiers_median', 'lcc_sum', 'protectedFieldsQty_max', 'assignmentsQty_sum', 'totalFieldsQty_sum',
+    #    'maven_reuse'
+    #]]	
+
+    if wrapper_knn is True:
+        complete_dataset = complete_dataset[[
+        'synchronizedMethodsQty_average', 'modifiers_median', 'lcc_sum', 'protectedFieldsQty_max', 'assignmentsQty_sum', 'totalFieldsQty_sum',
+        'maven_reuse'
+    ]]	
+
+    if wrapper_svm is True:
+        complete_dataset = complete_dataset[[
+            'parenthesizedExpsQty_sum', 'publicFieldsQty_average', 'modifiers_median', 'maven_reuse'
+        ]]
+
+    if top20_mi is True:
+        complete_dataset = complete_dataset[[
+            'lcom_sum',  'numbersQty_sum', 'uniqueWordsQty_sum', 'publicFieldsQty_sum','staticFieldsQty_sum',
+            'protectedFieldsQty_sum', 'maxNestedBlocksQty_average' ,'modifiers_sum' ,'lcc_sum','uniqueWordsQty_stdev',
+            'uniqueWordsQty_median','maxNestedBlocksQty_sum','staticMethodsQty_sum','loc_sum','protectedFieldsQty_average',
+            'finalMethodsQty_max','cbo_max','defaultMethodsQty_sum','staticFieldsQty_max' ,'parenthesizedExpsQty_average',
+            'maven_reuse'
+    ]]	
+
+    if shap_dt is True:
+        complete_dataset = complete_dataset [[
+            'innerClassesQty_stdev','finalMethodsQty_stdev','nosi_stdev','assignmentsQty_average',
+            'defaultFieldsQty_average','staticFieldsQty_max','variablesQty_average','stringLiteralsQty_average',
+            'modifiers_max','comparisonsQty_max','tryCatchQty_sum','maxNestedBlocksQty_average',
+            'defaultMethodsQty_max', 'maven_reuse'
+        ]]
+
+
     # separate into train and test datasets.
     train_x = complete_dataset.sample(frac=0.8,random_state=0)
     test_x = complete_dataset.drop(train_x.index)   # remove all training observations.
 
     # split x and y values.
     train_y = train_x.pop('maven_reuse')
-    test_y = test_x.pop('maven_reuse')
-
-    # normalising the data - i assume we are meant to when feature analysing or not, either way i did this cause idk how else to
-    # code sourced from here: https://stackoverflow.com/questions/26414913/normalize-columns-of-pandas-data-frame
-    from sklearn import preprocessing
-
-    # for train x
-    x = train_x.values #returns a numpy array
-    min_max_scaler = preprocessing.MinMaxScaler()
-    x_scaled = min_max_scaler.fit_transform(x)
-    train_x = pd.DataFrame(x_scaled, columns=train_x.columns)
-
-    # for test x
-    #x = test_x.values #returns a numpy array
-    #min_max_scaler = preprocessing.MinMaxScaler()
-    #x_scaled = min_max_scaler.fit_transform(x)
-    #test_x = pd.DataFrame(x_scaled, columns=test_x.columns) 
-    
+    test_y = test_x.pop('maven_reuse')    
 
     # return the data split into test and training X and Y values.
     return {

@@ -36,8 +36,6 @@ class LMNN(BaseModel):
         self.knnmodel = KNeighborsClassifier()
 
 
-   
-
     """
     fit the model with the training data.
     """

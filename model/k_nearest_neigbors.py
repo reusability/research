@@ -25,7 +25,7 @@ class KNearestNeighbors(BaseModel):
     """
     initialise class instance.
     """
-    def __init__(self, data, normalize=False):
+    def __init__(self, data, normalize=False, model=KNeighborsClassifier()):
         # call parent function.
         BaseModel.__init__(self, data, normalize=normalize)
 
@@ -34,18 +34,21 @@ class KNearestNeighbors(BaseModel):
 
         # Reference to the library used: https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html#sklearn.neighbors.KNeighborsClassifier
         # Initlising the class
-        self.model = KNeighborsClassifier(leaf_size=1, metric='manhattan', 
-                             n_neighbors=23, p=0.1, weights='distance')
+        self.model = model
+        #KNeighborsClassifier(leaf_size=10,metric='minkowski',n_neighbors=5,p=10, weights='distance')
+#KNeighborsClassifier(leaf_size=1, metric='manhattan', n_neighbors=23, p=0.1, weights='distance')
+
+
 
     def hyperparameter_tuning(self):
 
         # Defines the parameter search space
         param_space = {
-            'n_neighbors': Integer(1,50),  # integer valued parameter
+            'n_neighbors': Integer(1,3),  # integer valued parameter
             'weights': Categorical(['uniform', 'distance']),  # categorical parameter
             'metric': Categorical(['euclidean', 'manhattan', 'minkowski']), # categorical parameter
-            'p': Integer(1,20),
-            'leaf_size': Integer(1,60)
+            #'p': Integer(1,10),
+            #'leaf_size': Integer(1,10)
         }
 
         # Calls the parent function - finds the combination of parameters from the given param_space that 

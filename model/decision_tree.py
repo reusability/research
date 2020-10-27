@@ -20,7 +20,7 @@ class DecisionTree(BaseModel):
     """
     initialise class instance.
     """
-    def __init__(self, data, normalize=False):
+    def __init__(self, data, normalize=False, model=DecisionTreeClassifier()):
         # call parent function.
         BaseModel.__init__(self, data, normalize=normalize)
 
@@ -29,7 +29,9 @@ class DecisionTree(BaseModel):
 
         # Reference to the library used: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html
         # Selecting the most important features using a tress classifer algorithm# initialise a statsmodels OLS instance.
-        self.model = DecisionTreeClassifier(criterion='gini',max_depth=6,max_features=3,min_samples_leaf=2, min_samples_split=2)
+        self.model = model 
+        #DecisionTreeClassifier(criterion='gini',max_depth=2,max_features=21,min_samples_leaf=21, min_samples_split=2)
+
 
 #('criterion', 'gini'), ('max_depth', 6), ('max_features', 3), ('min_samples_leaf', 2), ('min_samples_split', 2)
 
@@ -38,10 +40,11 @@ class DecisionTree(BaseModel):
         # Defines the parameter search space
         param_space = {
             'max_features': Integer(1, 7),  # integer valued parameter
-            'max_depth': Integer(1,100),
+            'max_depth': Integer(1,7),
             'criterion': Categorical(['gini', 'entropy']),
-            'min_samples_split': Integer(2,200),
-            'min_samples_leaf': Integer(2,200)
+            'splitter': Categorical(['best','random']),
+            'min_samples_split': Integer(2,7),
+            'min_samples_leaf': Integer(2,7),
         }
 
         # Calls the parent function - finds the combination of parameters from the given param_space that 
