@@ -2,7 +2,7 @@
 This module will perform a neural network regression on a dataset to attempt to
 predict the reuse rate of classes.
 
-Last update: MB 29/8/2020 - created module from old 'basic_regression' module.
+Last update: MB 23/10/2020 - inherits from RegressionModel instead of BaseModel.
 """
 # import external modules.
 import tensorflow as tf
@@ -12,20 +12,20 @@ import matplotlib.pyplot as plt
 import tensorflow_docs as tfdocs
 import tensorflow_docs.plots
 import tensorflow_docs.modeling
+import tensorflow_model_optimization as tfmot
 
 # import local modules.
-from model.base_model import BaseModel
-
+from model.regression.regression_model import RegressionModel
 """
 Define the Neural network class.
 """
-class NN(BaseModel):
+class NN(RegressionModel):
     """
     initialise class instance.
     """
-    def __init__(self, data, hidden_layers = [], epochs=2000, validation_split=0.2, normalize=True):
+    def __init__(self, data, hidden_layers = [], epochs=2000, validation_split=0.2, normalize=True, **kwargs):
         # call parent function.
-        BaseModel.__init__(self, data, normalize=normalize)
+        RegressionModel.__init__(self, data, normalize=normalize, **kwargs)
 
         # additional attributes specific to this model.
         self.is_trained = False
@@ -54,6 +54,19 @@ class NN(BaseModel):
             # specify the final layer.
             self.model.add(tf.keras.layers.Dense(1, activation='relu'))
 
+        # setup tensorflow object to remove neurons with low magnitude.
+        # https://www.tensorflow.org/model_optimization/guide/pruning/pruning_with_keras
+        prune_low_magnitude = tfmot.sparsity.keras.prune_low_magnitude
+        end_step = np.ceil(300 / 32).astype(np.int32) * epochs
+
+        # Define pruning configuration.
+        pruning_params = {'pruning_schedule': tfmot.sparsity.keras.PolynomialDecay(initial_sparsity=0.50,
+                final_sparsity=0.80, begin_step=0, end_step=end_step)
+            }
+
+        # add the pruning to the model.
+        self.model = prune_low_magnitude(self.model, **pruning_params)
+
         # compile the model.
         self.model.compile(loss='mse',
             optimizer=tf.keras.optimizers.RMSprop(0.05),
@@ -64,11 +77,18 @@ class NN(BaseModel):
     """
     def train(self):
         # call parent function.
-        BaseModel.train(self)
+        RegressionModel.train(self)
+
+        # define what happens at the end of each set.
+        callbacks = [
+          tfmot.sparsity.keras.UpdatePruningStep(),
+          tfdocs.modeling.EpochDots()
+        ]
+
 
         # train the model.
         history = self.model.fit(self.train_x, self.train_y, epochs=self.epochs, validation_split=self.validation_split, verbose=0,
-            callbacks=[tfdocs.modeling.EpochDots()])
+            callbacks=callbacks)
 
         # plot fitting the error function over time to Jupyter Notebook.
         plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)
@@ -84,20 +104,26 @@ class NN(BaseModel):
     """
     def describe(self):
         # call parent function.
-        BaseModel.describe(self)
+        RegressionModel.describe(self)
 
         # print structure of NN to screen.
         print(self.model.summary())
 
-        # list the coefficients.
-        print(self.model.get_weights())
+        # print the weights for the first layer of the neural network.
+        for i in range(len(self.test_x.columns)):
+            # if weight is 0, move to next weight.
+            if self.model.get_weights()[0][i][0] == 0:
+                continue
+
+            # if weight is non-zero, print to screen.
+            print(self.test_x.columns[i]+': '+str(self.model.get_weights()[0][i][0]))
 
     """
     generate test predictions based on the fitted model.
     """
     def test(self):
         # call parent function.
-        BaseModel.test(self)
+        RegressionModel.test(self)
 
         # predict TRAINING data. convert to pandas series.
         numpy_predictions_train = self.model.predict(self.train_x).flatten().astype(int)

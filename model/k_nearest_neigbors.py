@@ -23,7 +23,7 @@ class KNearestNeighbors(BaseModel):
     """
     def __init__(self, data, normalize=False):
         # call parent function.
-        BaseModel.__init__(self, data, normalize=normalize)
+        BaseModel.__init__(self, data, normalize=normalize, **kwargs)
 
         # placeholders specific to this class.
         self.model = None
@@ -41,7 +41,7 @@ class KNearestNeighbors(BaseModel):
             'metric': ['euclidean', 'manhattan', 'minkowski'] # categorical parameter
         }
 
-        # Calls the parent function - finds the combination of parameters from the given param_space that 
+        # Calls the parent function - finds the combination of parameters from the given param_space that
         # yields the highest score - set to accuracy currently
         BaseModel.hyperparameter_tuning(self, 'Grid', param_space)
 
@@ -52,7 +52,7 @@ class KNearestNeighbors(BaseModel):
         # call parent function.
         BaseModel.train(self)
 
-        #trains the k-nearest-neighbor model 
+        #trains the k-nearest-neighbor model
         self.model.fit(self.train_x, self.train_y)
 
         # update the is_trained variable.
@@ -75,12 +75,10 @@ class KNearestNeighbors(BaseModel):
         # call parent function.
         BaseModel.test(self)
 
-        # Using model built with training data, to predict the test data - using the predict method in 
+        # Using model built with training data, to predict the test data - using the predict method in
         # sklearn.neighbors.KNeighborsClassifier
         y_pred = self.model.predict(self.test_x)
         self.test_predictions = pd.Series(data=y_pred, dtype="int64")
 
         # assess the performance of the predictions.
         self.assess_performance()
-
-        

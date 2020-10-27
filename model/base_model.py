@@ -7,6 +7,9 @@ Last updated: MB 29/08/2020 - created module.
 # import external libraries.
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import scipy.stats as stats
 from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.model_selection import GridSearchCV
 from skopt import BayesSearchCV
@@ -21,7 +24,7 @@ class BaseModel:
     """
     store dataset. data is a dictionary.
     """
-    def __init__(self, data, normalize=False):
+    def __init__(self, data, normalize=False, **kwargs):
         print(">> initialising model...")
 
         # if we are normalizing data, save the normalized x value.
@@ -110,62 +113,6 @@ class BaseModel:
             raise Exception('Run the `test` function to predict test data.')
 
         print(">> assessing prediction performance...")
-
-        # TRAINING plot. configure Scatter plot of the predicted ReuseRate data
-        # set against the actual ReuseRate data set (as per mavern)
-        plt.figure(2)
-        plt.axes(aspect='equal')
-        plt.title('TRAINING data - predictions vs actual')
-        plt.ylabel('True Value [ReuseRate]')
-        plt.xlabel('Predicted Value [ReuseRate]')
-        lims_train = [min(min(self.train_predictions), min(self.train_y))-1000, max(max(self.train_predictions), max(self.train_y))+1000] # axis limits.
-        plt.xlim(lims_train)
-        plt.ylim(lims_train)
-        plt.plot(lims_train, lims_train)
-        plt.scatter(self.train_predictions, self.train_y)
-
-        # print the performance of the predictions on train data.
-        MSE = (self.train_y - self.train_predictions).pow(2).mean()
-        MAE = abs(self.train_y - self.train_predictions).mean()
-        print('train MSE: %.0f' % MSE)
-        print('train MAE: %.0f' % MAE)
-
-        # TESTING plot. configure Scatter plot of the predicted ReuseRate data
-        # set against the actual ReuseRate data set (as per mavern)
-        plt.figure(3)
-        plt.axes(aspect='equal')
-        plt.title('TESTING data - predictions vs actual')
-        plt.ylabel('True Value [ReuseRate]')
-        plt.xlabel('Predicted Value [ReuseRate]')
-        lims_test = [min(min(self.test_predictions), min(self.test_y))-1000, max(max(self.test_predictions), max(self.test_y))+1000] # axis limits.
-        plt.xlim(lims_test)
-        plt.ylim(lims_test)
-        plt.plot(lims_test, lims_test)
-        plt.scatter(self.test_predictions, self.test_y)
-
-        # print the performance of the predictions on test data.
-        MSE = (self.test_y - self.test_predictions).pow(2).mean()
-        MAE = abs(self.test_y - self.test_predictions).mean()
-        print('test MSE: %.0f' % MSE)
-        print('test MAE: %.0f' % MAE)
-
-
-        ###Commented out - seems like relevant evaluaiont information used for classification algorithms
-        ### printing out acurracy score, confusion matrix as heat map and a classification report
-        ##Calculate the accuracy of the model
-        #print("Accuracy: " + self.model.score(self.test_x, self.test_y))
-
-        ## Printing out the confusion matrix as a heatmap - comparing the trained y variable
-        ## with the actual y variable
-
-        #conf_matrix = confusion_matrix(self.test_y, y_pred)
-        #sns.heatmap(conf_matrix.T, square=True, annot=True, fmt='d', cbar=False)
-        #plt.xlabel('Real Output')
-        #plt.ylabel('Predicted Output')
-
-        ## Evaluating the confusion matrix results
-        #print(classification_report(self.test_y, y_pred))
-
 
     """
     Convert a pandas dataframe of values into normalized values based on the

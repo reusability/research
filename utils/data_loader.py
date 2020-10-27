@@ -11,13 +11,13 @@ import tensorflow as tf
 
 # define constants.
 DATASET_2019_FILEPATH = r'./data/dataset_2019.csv'  # dataset from https://www.sciencedirect.com/science/article/pii/S235234091931042X
-DATASET_2020_FILEPATH = r'./data/aggregate_201019.csv'
+DATASET_2020_FILEPATH = r'./data/aggregate_201027.csv'
 DEFAULT_BATCH_SIZE = 32
 
 """
 Return the 2019 dataset in the format of tf.data.Dataset.
 """
-def load_2019_dataset(constant=True, sqaured=False, remove_multicollinearity=False, only_proposed=False):
+def load_2019_dataset(constant=True, squared=False, remove_multicollinearity=False, only_proposed=False, **kwargs):
     # define dataset information.
     filepath = DATASET_2019_FILEPATH
     y_column = 'ReuseRate'
@@ -31,28 +31,34 @@ def load_2019_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
     return _load_dataset(filepath=filepath, unnecessary_columns=unnecessary_columns,
         y_column=y_column, multicollinear_columns=multicollinear_columns,
         only_proposed_columns=only_proposed_columns, train_fraction=train_fraction,
-        constant=constant, sqaured=sqaured, remove_multicollinearity=remove_multicollinearity,
+        constant=constant, squared=squared, remove_multicollinearity=remove_multicollinearity,
         only_proposed=only_proposed)
 
 """
 Return the 2020 dataset in the format of tf.data.Dataset.
 """
-def load_2020_dataset(constant=True, sqaured=False, remove_multicollinearity=False, only_proposed=False):
+def load_2020_dataset(constant=True, squared=False, remove_multicollinearity=False, only_proposed=False, **kwargs):
     # define dataset information.
     filepath = DATASET_2020_FILEPATH
     y_column = 'maven_reuse'
     train_fraction = 0.8
     unnecessary_columns = ['project', 'release', 'maven_release']
     only_proposed_columns = [
-        'returnQty_median', \
-        'maxNestedBlocksQty_average', \
-        'numbersQty_stdev', \
-        'tcc_stdev', \
-        'lcc_stdev', \
-        'numbersQty_max', \
+        'lambdasQty_max', \
         'nosi_max', \
-        'visibleFieldsQty_stdev', \
-        'visibleFieldsQty_max'
+        'anonymousClassesQty_stdev', \
+        'anonymousClassesQty_max', \
+        'mathOperationsQty_sum', \
+        'mathOperationsQty_max', \
+        'numbersQty_sum', \
+        'assignmentsQty_sum', \
+        'assignmentsQty_max', \
+        'dit_average', \
+        'dit_stdev', \
+        'cbo_average', \
+        'variablesQty_average', \
+        'variablesQty_max', \
+        'comparisonsQty_sum', \
     ]
     multicollinear_columns = []
 
@@ -60,7 +66,7 @@ def load_2020_dataset(constant=True, sqaured=False, remove_multicollinearity=Fal
     return _load_dataset(filepath=filepath, unnecessary_columns=unnecessary_columns,
         y_column=y_column, multicollinear_columns=multicollinear_columns,
         only_proposed_columns=only_proposed_columns, train_fraction=train_fraction,
-        constant=constant, sqaured=sqaured, remove_multicollinearity=remove_multicollinearity,
+        constant=constant, squared=squared, remove_multicollinearity=remove_multicollinearity,
         only_proposed=only_proposed)
 
 """
@@ -73,7 +79,7 @@ def generate_squared_values(dataset):
 
     # for each column name in headers, create a new column with squared values.
     # do not create new columns for constant or reuse rate.
-    for column_name in [h for h in headers if h != 'ReuseRate' and h != 'constant']:
+    for column_name in [h for h in headers if h != 'ReuseRate' and h != 'constant' and h != 'maven_reuse']:
         dataset[column_name+'_squared'] = dataset[column_name].pow(2)
 
     # return the updated dataset.
@@ -84,7 +90,7 @@ This is an internal function that performs common operations when loading
 different datasets.
 """
 def _load_dataset(filepath=None, unnecessary_columns=[], y_column=None, multicollinear_columns=[],
-    only_proposed_columns = [], train_fraction=0.8, constant=True, sqaured=False,
+    only_proposed_columns = [], train_fraction=0.8, constant=True, squared=False,
     remove_multicollinearity=False, only_proposed=False):
     # throw an error if filepath or y_column is None.
     if filepath is None:
@@ -112,8 +118,8 @@ def _load_dataset(filepath=None, unnecessary_columns=[], y_column=None, multicol
     if only_proposed is True:
         complete_dataset = complete_dataset[only_proposed_columns + [y_column]]
 
-    # if squared is true, add sqaured columns.
-    if sqaured is True:
+    # if squared is true, add squared columns.
+    if squared is True:
         complete_dataset = generate_squared_values(complete_dataset)
 
     # if we are adding a constant, add it to the complete dataset.

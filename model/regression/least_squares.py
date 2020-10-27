@@ -2,7 +2,7 @@
 This module will perform an OLS regression on a dataset to attempt to
 predict the reuse rate of classes.
 
-Last update: MB 29/8/2020 - created module from template created by Ibrahim.
+Last update: MB 23/10/2020 - inherits from RegressionModel instead of BaseModel.
 """
 # import external modules.
 import pandas as pd
@@ -11,18 +11,18 @@ import statsmodels.api as sm
 import math
 
 # import local modules.
-from model.base_model import BaseModel
+from model.regression.regression_model import RegressionModel
 
 """
 Define the GLS class.
 """
-class LeastSquares(BaseModel):
+class LeastSquares(RegressionModel):
     """
     initialise class instance.
     """
-    def __init__(self, data, normalize=False, t_value_threshold=2.3):
+    def __init__(self, data, normalize=False, t_value_threshold=2.3, **kwargs):
         # call parent function.
-        BaseModel.__init__(self, data, normalize=normalize)
+        RegressionModel.__init__(self, data, normalize=normalize, **kwargs)
 
         # placeholders specific to this class.
         self.model = None
@@ -37,7 +37,7 @@ class LeastSquares(BaseModel):
     """
     def train(self):
         # call parent function.
-        BaseModel.train(self)
+        RegressionModel.train(self)
 
         # fit the model.
         self.trained_model = self.model.fit()
@@ -77,7 +77,7 @@ class LeastSquares(BaseModel):
     """
     def describe(self):
         # call parent function.
-        BaseModel.describe(self)
+        RegressionModel.describe(self)
 
         # display coefficient information.
         print(self.trained_model.summary())
@@ -87,7 +87,7 @@ class LeastSquares(BaseModel):
     """
     def test(self):
         # call parent function.
-        BaseModel.test(self)
+        RegressionModel.test(self)
 
         # call predict method on the statsmodels.OLS object to predict out of
         # sample oversvations. if prediction is less than 0, change value to 0.
