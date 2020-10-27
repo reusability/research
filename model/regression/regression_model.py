@@ -6,6 +6,7 @@ rate.
 Last updated: MB 23/10/2020 - created module.
 """
 # import external libraries.
+import numpy as np
 import matplotlib.pyplot as plt
 
 # import local modules.
@@ -73,6 +74,11 @@ class RegressionModel(BaseModel):
 
         # create plot of residuals.
         residuals = sorted([list(self.test_predictions)[i] - list(self.test_y)[i] for i in range(len(self.test_predictions))])
+        print('residual stdev: '+str(int(np.std(residuals))))
+        print('residual mean: '+str(int(np.mean(residuals))))
+        print('residual median: '+str(int(np.median(residuals))))
+        print('residual max: '+str(int(np.max(residuals))))
+        print('residual min: '+str(int(np.min(residuals))))
         plt.figure(4)
         plt.title('TESTING data - residual distribution')
         plt.hist(residuals, density=True, histtype='stepfilled', alpha=0.1)
